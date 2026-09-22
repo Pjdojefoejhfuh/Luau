@@ -1,0 +1,430 @@
+{
+  "scripts": {
+    "e797c2b6bdfbdc89": {
+      "id": "e797c2b6bdfbdc89",
+      "name": "test",
+      "content": "-- ═══════════════════════════════════════════════\n-- 🌌 NOVA HUB — Ultimate Edition\n-- Rectangular drag handle · Settings · Gradients\n-- ═══════════════════════════════════════════════\n\nlocal players = game:GetService(\"Players\")\nlocal TweenService = game:GetService(\"TweenService\")\nlocal UserInputService = game:GetService(\"UserInputService\")\nlocal RunService = game:GetService(\"RunService\")\nlocal HttpService = game:GetService(\"HttpService\")\nlocal lp = players.LocalPlayer\n\n-- ═══════════════════════════════════════════════\n-- ⚙️ SETTINGS (saved)\n-- ═══════════════════════════════════════════════\nlocal CONFIG_FILE = \"NovaHub_Config.json\"\n\nlocal Settings = {\n    notifications = true,\n    notifDuration = 3,\n    particles = true,\n    particleCount = 50,\n    theme = \"violet\",  -- violet, blue, cyan, pink, green, orange\n    glow = true,\n    blur = true,\n    closeAfterExec = false,\n}\n\n-- Load config\npcall(function()\n    if isfile and isfile(CONFIG_FILE) and readfile then\n        local ok, data = pcall(function() return HttpService:JSONDecode(readfile(CONFIG_FILE)) end)\n        if ok and type(data) == \"table\" then\n            for k, v in pairs(data) do\n                if Settings[k] ~= nil then Settings[k] = v end\n            end\n        end\n    end\nend)\n\nlocal function saveConfig()\n    pcall(function()\n        if writefile then writefile(CONFIG_FILE, HttpService:JSONEncode(Settings)) end\n    end)\nend\n\n-- ═══════════════════════════════════════════════\n-- 📋 CATEGORIES\n-- ⭐ To ADD a category:\n--    Go to the END of the \"Game\" block, press Enter, paste:\n--    {\n--        name = \"Utility\",\n--        color = Color3.fromRGB(130, 200, 255),\n--        scripts = {\n--            { name = \"My Script\", description = \"Desc\", link = \"https://...\" },\n--        },\n--    },\n-- ═══════════════════════════════════════════════\n\nlocal HUB_CATEGORIES = {\n    {\n        name = \"Game\",\n        color = Color3.fromRGB(180, 130, 255),\n        scripts = {\n            {\n                name = \"Avatar Catalog\",\n                description = \"Opens the avatar catalog\",\n                link = \"https://raw.githubusercontent.com/Pjdojefoejhfuh/ad/refs/heads/main/1\",\n            },\n            {\n                name = \"Unlock ALL RIVALS\",\n                description = \"unlock all\",\n                link = \"https://raw.githubusercontent.com/Pjdojefoejhfuh/Nikiontop-/refs/heads/main/1\",\n            },\n            {\n                name = \"Unlock ALL Animation\",\n                description = \"unlock all\",\n                link = \"https://raw.githubusercontent.com/Pjdojefoejhfuh/ad/refs/heads/main/All%20animations\",\n            },\n            {\n                name = \"Break in Get all item inf\",\n                description = \"verryy op\",\n                link = \"https://raw.githubusercontent.com/Pjdojefoejhfuh/ad/refs/heads/main/break%20in%20hitsotry\",\n            },\n                        {\n                name = \"Cars stabilizer\",\n                description = \"verryy op\",\n                link = \"https://raw.githubusercontent.com/Pjdojefoejhfuh/ad/refs/heads/main/Cars%20stabilizer\",\n            },\n            {\n                name = \"auto checkpoint\",\n                description = \"verryy op\",\n                link = \"https://raw.githubusercontent.com/Pjdojefoejhfuh/ad/refs/heads/main/cars%20autocheckpoint\",\n            },\n            \n        },\n    },\n    \n    -- ⭐ PASTE YOUR BLOCK HERE\n}\n\n-- ═══════════════════════════════════════════════\n-- 🎨 COLOR THEMES\n-- ═══════════════════════════════════════════════\nlocal THEMES = {\n    violet = {\n        PRIMARY = Color3.fromRGB(180, 130, 255),\n        PRIMARY_DARK = Color3.fromRGB(120, 80, 200),\n        ACCENT = Color3.fromRGB(220, 180, 255),\n        BG = Color3.fromRGB(10, 8, 20),\n        BG_DEEP = Color3.fromRGB(5, 3, 12),\n        CARD = Color3.fromRGB(22, 16, 40),\n    },\n    blue = {\n        PRIMARY = Color3.fromRGB(100, 180, 255),\n        PRIMARY_DARK = Color3.fromRGB(60, 120, 220),\n        ACCENT = Color3.fromRGB(180, 220, 255),\n        BG = Color3.fromRGB(8, 12, 25),\n        BG_DEEP = Color3.fromRGB(4, 6, 15),\n        CARD = Color3.fromRGB(16, 22, 45),\n    },\n    cyan = {\n        PRIMARY = Color3.fromRGB(100, 220, 220),\n        PRIMARY_DARK = Color3.fromRGB(60, 150, 150),\n        ACCENT = Color3.fromRGB(180, 240, 240),\n        BG = Color3.fromRGB(5, 18, 20),\n        BG_DEEP = Color3.fromRGB(3, 10, 12),\n        CARD = Color3.fromRGB(12, 28, 32),\n    },\n    pink = {\n        PRIMARY = Color3.fromRGB(255, 130, 200),\n        PRIMARY_DARK = Color3.fromRGB(200, 80, 150),\n        ACCENT = Color3.fromRGB(255, 200, 230),\n        BG = Color3.fromRGB(20, 8, 18),\n        BG_DEEP = Color3.fromRGB(12, 4, 10),\n        CARD = Color3.fromRGB(40, 16, 32),\n    },\n    green = {\n        PRIMARY = Color3.fromRGB(100, 220, 160),\n        PRIMARY_DARK = Color3.fromRGB(60, 160, 110),\n        ACCENT = Color3.fromRGB(180, 240, 210),\n        BG = Color3.fromRGB(5, 18, 12),\n        BG_DEEP = Color3.fromRGB(3, 10, 7),\n        CARD = Color3.fromRGB(12, 28, 22),\n    },\n    orange = {\n        PRIMARY = Color3.fromRGB(255, 160, 80),\n        PRIMARY_DARK = Color3.fromRGB(200, 110, 50),\n        ACCENT = Color3.fromRGB(255, 210, 160),\n        BG = Color3.fromRGB(20, 12, 5),\n        BG_DEEP = Color3.fromRGB(12, 8, 3),\n        CARD = Color3.fromRGB(40, 22, 10),\n    },\n}\n\n-- Apply selected theme\nlocal function getTheme(name)\n    return THEMES[name] or THEMES.violet\nend\n\nlocal currentTheme = getTheme(Settings.theme)\n\nlocal T = {\n    BG = currentTheme.BG,\n    BG_DEEP = currentTheme.BG_DEEP,\n    CARD = currentTheme.CARD,\n    TEXT = Color3.fromRGB(255, 255, 255),\n    TEXT_DIM = Color3.fromRGB(170, 155, 200),\n    PRIMARY = currentTheme.PRIMARY,\n    PRIMARY_DARK = currentTheme.PRIMARY_DARK,\n    ACCENT = currentTheme.ACCENT,\n    SUCCESS = Color3.fromRGB(100, 220, 160),\n    DANGER = Color3.fromRGB(255, 100, 130),\n    WARN = Color3.fromRGB(255, 200, 100),\n    WHITE = Color3.fromRGB(255, 255, 255),\n    BLACK = Color3.fromRGB(0, 0, 0),\n}\n\n-- ═══════════════════════════════════════════════\n-- 🌈 DRIPPING GRADIENT\n-- ═══════════════════════════════════════════════\nlocal function makeDripGradient(parent, colors, speed)\n    local grad = Instance.new(\"UIGradient\")\n    grad.Color = ColorSequence.new(colors)\n    grad.Rotation = 0\n    grad.Parent = parent\n\n    task.spawn(function()\n        while grad and grad.Parent do\n            grad.Rotation = (grad.Rotation + (speed or 2)) % 360\n            task.wait(0.03)\n        end\n    end)\n\n    return grad\nend\n\n-- ═══════════════════════════════════════════════\n-- 🔔 NOTIFICATIONS\n-- ═══════════════════════════════════════════════\nlocal notifContainer = nil\nlocal notifParentGui = nil\nlocal notifOrder = 0\n\nlocal function showNotif(title, message, notifType)\n    if not Settings.notifications then return end\n    if not notifParentGui then return end\n    notifType = notifType or \"info\"\n    notifOrder = notifOrder + 1\n\n    if not notifContainer or not notifContainer.Parent then\n        notifContainer = Instance.new(\"Frame\")\n        notifContainer.Size = UDim2.new(0, 320, 1, -40)\n        notifContainer.Position = UDim2.new(0.5, -160, 0, 20)\n        notifContainer.BackgroundTransparency = 1\n        notifContainer.ZIndex = 999999\n        notifContainer.Parent = notifParentGui\n        local l = Instance.new(\"UIListLayout\")\n        l.Padding = UDim.new(0, 6)\n        l.SortOrder = Enum.SortOrder.LayoutOrder\n        l.HorizontalAlignment = Enum.HorizontalAlignment.Center\n        l.VerticalAlignment = Enum.VerticalAlignment.Top\n        l.Parent = notifContainer\n    end\n\n    local accentColor\n    if notifType == \"success\" then accentColor = T.SUCCESS\n    elseif notifType == \"error\" then accentColor = T.DANGER\n    elseif notifType == \"warn\" then accentColor = T.WARN\n    else accentColor = T.PRIMARY end\n\n    local notif = Instance.new(\"Frame\")\n    notif.Size = UDim2.new(0, 320, 0, 50)\n    notif.BackgroundColor3 = T.BG_DEEP\n    notif.BackgroundTransparency = 0.05\n    notif.BorderSizePixel = 0\n    notif.Position = UDim2.new(0, 0, 0, -70)\n    notif.LayoutOrder = notifOrder\n    notif.ZIndex = 1000000\n    notif.Parent = notifContainer\n\n    makeDripGradient(notif, {\n        ColorSequenceKeypoint.new(0.00, T.BG_DEEP),\n        ColorSequenceKeypoint.new(0.50, T.CARD),\n        ColorSequenceKeypoint.new(1.00, T.BG_DEEP),\n    }, 1)\n\n    local nStroke = Instance.new(\"UIStroke\")\n    nStroke.Color = accentColor\n    nStroke.Thickness = 1.5\n    nStroke.Transparency = 0.3\n    nStroke.Parent = notif\n\n    local bar = Instance.new(\"Frame\")\n    bar.Size = UDim2.new(0, 4, 1, -12)\n    bar.Position = UDim2.new(0, 6, 0, 6)\n    bar.BackgroundColor3 = accentColor\n    bar.BorderSizePixel = 0\n    bar.Parent = notif\n\n    local titleLbl = Instance.new(\"TextLabel\")\n    titleLbl.Size = UDim2.new(1, -30, 0, 18)\n    titleLbl.Position = UDim2.new(0, 20, 0, 8)\n    titleLbl.BackgroundTransparency = 1\n    titleLbl.Text = title\n    titleLbl.TextColor3 = accentColor\n    titleLbl.Font = Enum.Font.GothamBold\n    titleLbl.TextSize = 12\n    titleLbl.TextXAlignment = Enum.TextXAlignment.Left\n    titleLbl.Parent = notif\n\n    local msgLbl = Instance.new(\"TextLabel\")\n    msgLbl.Size = UDim2.new(1, -30, 0, 14)\n    msgLbl.Position = UDim2.new(0, 20, 0, 26)\n    msgLbl.BackgroundTransparency = 1\n    msgLbl.Text = message\n    msgLbl.TextColor3 = T.TEXT_DIM\n    msgLbl.Font = Enum.Font.Gotham\n    msgLbl.TextSize = 10\n    msgLbl.TextXAlignment = Enum.TextXAlignment.Left\n    msgLbl.TextTruncate = Enum.TextTruncate.AtEnd\n    msgLbl.Parent = notif\n\n    TweenService:Create(notif, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {\n        Position = UDim2.new(0, 0, 0, 0)\n    }):Play()\n\n    task.delay(Settings.notifDuration, function()\n        if notif and notif.Parent then\n            TweenService:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {\n                Position = UDim2.new(0, 0, 0, -70),\n                BackgroundTransparency = 1,\n            }):Play()\n            task.wait(0.35)\n            if notif and notif.Parent then notif:Destroy() end\n        end\n    end)\nend\n\n-- ═══════════════════════════════════════════════\n-- 🎯 EXECUTE A SCRIPT\n-- ═══════════════════════════════════════════════\nlocal function executeScript(scriptData, closeAfter)\n    if not scriptData or not scriptData.link or scriptData.link == \"\" then\n        showNotif(\"Execute\", \"No link for this script\", \"error\")\n        return\n    end\n\n    showNotif(\"Loading\", \"Loading \" .. scriptData.name, \"info\")\n\n    task.spawn(function()\n        local ok, code = pcall(function()\n            return game:HttpGet(scriptData.link)\n        end)\n\n        if not ok or not code or code == \"\" then\n            showNotif(\"Error\", \"Failed to download\", \"error\")\n            return\n        end\n\n        local ok2, err = pcall(function()\n            local func, compileErr = loadstring(code)\n            if not func then\n                error(compileErr or \"Compilation error\")\n            end\n            func()\n        end)\n\n        if ok2 then\n            showNotif(\"Execute\", scriptData.name .. \" loaded\", \"success\")\n            if closeAfter and closeAfter == true then\n                if _G.NovaHub_Close then _G.NovaHub_Close() end\n            end\n        else\n            showNotif(\"Error\", tostring(err):sub(1, 60), \"error\")\n        end\n    end)\nend\n\n-- ═══════════════════════════════════════════════\n-- 🌌 LOADING SCREEN\n-- ═══════════════════════════════════════════════\nlocal function showLoadingScreen(callback)\n    local loadingGui = Instance.new(\"ScreenGui\")\n    loadingGui.Name = \"NovaLoading\"\n    loadingGui.ResetOnSpawn = false\n    loadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling\n    loadingGui.IgnoreGuiInset = true\n    loadingGui.DisplayOrder = 9999999\n    loadingGui.Parent = lp:WaitForChild(\"PlayerGui\")\n\n    local bg = Instance.new(\"Frame\")\n    bg.Size = UDim2.new(1, 0, 1, 0)\n    bg.BackgroundColor3 = T.BG_DEEP\n    bg.BorderSizePixel = 0\n    bg.Parent = loadingGui\n\n    makeDripGradient(bg, {\n        ColorSequenceKeypoint.new(0.00, T.BG_DEEP),\n        ColorSequenceKeypoint.new(0.25, T.CARD),\n        ColorSequenceKeypoint.new(0.50, T.BG),\n        ColorSequenceKeypoint.new(0.75, T.PRIMARY_DARK),\n        ColorSequenceKeypoint.new(1.00, T.BG_DEEP),\n    }, 0.5)\n\n    for i = 1, 80 do\n        local p = Instance.new(\"Frame\")\n        p.Size = UDim2.new(0, math.random(2, 6), 0, math.random(2, 6))\n        p.Position = UDim2.new(math.random(), 0, 1.2, 0)\n        p.BackgroundColor3 = T.PRIMARY\n        p.BackgroundTransparency = math.random() * 0.5 + 0.2\n        p.BorderSizePixel = 0\n        p.Parent = bg\n        local c = Instance.new(\"UICorner\")\n        c.CornerRadius = UDim.new(1, 0)\n        c.Parent = p\n\n        task.spawn(function()\n            while p and p.Parent do\n                local duration = math.random(4, 10)\n                p.Position = UDim2.new(math.random(), 0, 1.2, 0)\n                p.BackgroundTransparency = math.random() * 0.5 + 0.2\n                TweenService:Create(p, TweenInfo.new(duration, Enum.EasingStyle.Linear), {\n                    Position = UDim2.new(math.random(), 0, -0.2, 0),\n                    BackgroundTransparency = 1,\n                }):Play()\n                task.wait(duration)\n            end\n        end)\n    end\n\n    local content = Instance.new(\"Frame\")\n    content.Size = UDim2.new(0, 300, 0, 220)\n    content.Position = UDim2.new(0.5, -150, 0.5, -110)\n    content.BackgroundTransparency = 1\n    content.Parent = loadingGui\n\n    local logoBox = Instance.new(\"Frame\")\n    logoBox.Size = UDim2.new(0, 110, 0, 110)\n    logoBox.Position = UDim2.new(0.5, -55, 0, 0)\n    logoBox.BackgroundColor3 = T.BG_DEEP\n    logoBox.BorderSizePixel = 0\n    logoBox.Parent = content\n\n    local lbStroke = Instance.new(\"UIStroke\")\n    lbStroke.Color = T.PRIMARY\n    lbStroke.Thickness = 2\n    lbStroke.Transparency = 0\n    lbStroke.Parent = logoBox\n\n    makeDripGradient(lbStroke, {\n        ColorSequenceKeypoint.new(0.00, T.PRIMARY),\n        ColorSequenceKeypoint.new(0.50, T.WHITE),\n        ColorSequenceKeypoint.new(1.00, T.PRIMARY_DARK),\n    }, 3)\n\n    local logo = Instance.new(\"TextLabel\")\n    logo.Size = UDim2.new(1, 0, 1, 0)\n    logo.BackgroundTransparency = 1\n    logo.Text = \"N\"\n    logo.TextColor3 = T.WHITE\n    logo.TextSize = 56\n    logo.Font = Enum.Font.GothamBlack\n    logo.Parent = logoBox\n\n    local title = Instance.new(\"TextLabel\")\n    title.Size = UDim2.new(1, 0, 0, 30)\n    title.Position = UDim2.new(0, 0, 0, 128)\n    title.BackgroundTransparency = 1\n    title.Text = \"NOVA HUB\"\n    title.TextColor3 = T.WHITE\n    title.TextSize = 24\n    title.Font = Enum.Font.GothamBlack\n    title.TextXAlignment = Enum.TextXAlignment.Center\n    title.Parent = content\n\n    makeDripGradient(title, {\n        ColorSequenceKeypoint.new(0.00, T.WHITE),\n        ColorSequenceKeypoint.new(0.50, T.PRIMARY),\n        ColorSequenceKeypoint.new(1.00, T.WHITE),\n    }, 2)\n\n    local barBg = Instance.new(\"Frame\")\n    barBg.Size = UDim2.new(0, 220, 0, 4)\n    barBg.Position = UDim2.new(0.5, -110, 0, 178)\n    barBg.BackgroundColor3 = T.CARD\n    barBg.BorderSizePixel = 0\n    barBg.Parent = content\n\n    local bar = Instance.new(\"Frame\")\n    bar.Size = UDim2.new(0, 0, 1, 0)\n    bar.BackgroundColor3 = T.PRIMARY\n    bar.BorderSizePixel = 0\n    bar.Parent = barBg\n\n    makeDripGradient(bar, {\n        ColorSequenceKeypoint.new(0.00, T.PRIMARY_DARK),\n        ColorSequenceKeypoint.new(0.50, T.ACCENT),\n        ColorSequenceKeypoint.new(1.00, T.PRIMARY),\n    }, 4)\n\n    local status = Instance.new(\"TextLabel\")\n    status.Size = UDim2.new(1, 0, 0, 18)\n    status.Position = UDim2.new(0, 0, 0, 196)\n    status.BackgroundTransparency = 1\n    status.Text = \"Initializing...\"\n    status.TextColor3 = T.TEXT_DIM\n    status.TextSize = 11\n    status.Font = Enum.Font.Gotham\n    status.TextXAlignment = Enum.TextXAlignment.Center\n    status.Parent = content\n\n    TweenService:Create(bar, TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {\n        Size = UDim2.new(1, 0, 1, 0)\n    }):Play()\n\n    local statusMessages = {\"Connecting...\", \"Loading...\", \"Initializing...\", \"Ready!\"}\n    task.spawn(function()\n        for i, msg in ipairs(statusMessages) do\n            status.Text = msg\n            task.wait(0.4)\n        end\n    end)\n\n    task.delay(1.8, function()\n        TweenService:Create(bg, TweenInfo.new(0.6, Enum.EasingStyle.Quad), {\n            BackgroundTransparency = 1,\n        }):Play()\n        TweenService:Create(content, TweenInfo.new(0.4, Enum.EasingStyle.Back), {\n            Size = UDim2.new(0, 0, 0, 0),\n            Position = UDim2.new(0.5, 0, 0.5, 0),\n        }):Play()\n        task.wait(0.7)\n        loadingGui:Destroy()\n        if callback then callback() end\n    end)\nend\n\n-- ═══════════════════════════════════════════════\n-- 🎨 MAIN UI\n-- ═══════════════════════════════════════════════\nlocal function createUI()\n    local screenGui = Instance.new(\"ScreenGui\")\n    screenGui.Name = \"NovaHub\"\n    screenGui.ResetOnSpawn = false\n    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling\n    screenGui.IgnoreGuiInset = true\n    screenGui.DisplayOrder = 999999\n    screenGui.Parent = lp:WaitForChild(\"PlayerGui\")\n\n    notifParentGui = screenGui\n\n    -- Panel\n    local panel = Instance.new(\"Frame\")\n    panel.Name = \"Panel\"\n    panel.Size = UDim2.new(0, 520, 0, 580)\n    panel.Position = UDim2.new(0.5, -260, 0.5, -290)\n    panel.BackgroundColor3 = T.BG\n    panel.BackgroundTransparency = 0.05\n    panel.BorderSizePixel = 0\n    panel.Active = true\n    panel.ClipsDescendants = true\n    panel.ZIndex = 10\n    panel.Parent = screenGui\n\n    makeDripGradient(panel, {\n        ColorSequenceKeypoint.new(0.00, T.CARD),\n        ColorSequenceKeypoint.new(0.25, T.BG),\n        ColorSequenceKeypoint.new(0.50, T.PRIMARY_DARK),\n        ColorSequenceKeypoint.new(0.75, T.BG_DEEP),\n        ColorSequenceKeypoint.new(1.00, T.CARD),\n    }, 0.3)\n\n    local pStroke = Instance.new(\"UIStroke\")\n    pStroke.Color = T.PRIMARY\n    pStroke.Thickness = 2\n    pStroke.Transparency = 0.2\n    pStroke.Parent = panel\n\n    makeDripGradient(pStroke, {\n        ColorSequenceKeypoint.new(0.00, T.PRIMARY),\n        ColorSequenceKeypoint.new(0.25, T.WHITE),\n        ColorSequenceKeypoint.new(0.50, T.PRIMARY_DARK),\n        ColorSequenceKeypoint.new(0.75, T.ACCENT),\n        ColorSequenceKeypoint.new(1.00, T.PRIMARY),\n    }, 2)\n\n    -- Glow\n    if Settings.glow then\n        local glow = Instance.new(\"ImageLabel\")\n        glow.Size = UDim2.new(1, 60, 1, 60)\n        glow.Position = UDim2.new(0, -30, 0, -30)\n        glow.BackgroundTransparency = 1\n        glow.Image = \"rbxassetid://5028857084\"\n        glow.ImageColor3 = T.PRIMARY\n        glow.ImageTransparency = 0.85\n        glow.ScaleType = Enum.ScaleType.Slice\n        glow.SliceCenter = Rect.new(24, 24, 276, 276)\n        glow.ZIndex = 9\n        glow.Parent = panel\n\n        task.spawn(function()\n            while glow and glow.Parent do\n                TweenService:Create(glow, TweenInfo.new(1.5, Enum.EasingStyle.Sine), {\n                    ImageTransparency = 0.7,\n                }):Play()\n                task.wait(1.5)\n                TweenService:Create(glow, TweenInfo.new(1.5, Enum.EasingStyle.Sine), {\n                    ImageTransparency = 0.9,\n                }):Play()\n                task.wait(1.5)\n            end\n        end)\n    end\n\n    -- Particles\n    if Settings.particles then\n        local particleContainer = Instance.new(\"Frame\")\n        particleContainer.Size = UDim2.new(1, 0, 1, 0)\n        particleContainer.BackgroundTransparency = 1\n        particleContainer.ClipsDescendants = true\n        particleContainer.ZIndex = 10\n        particleContainer.Parent = panel\n\n        for i = 1, Settings.particleCount do\n            local p = Instance.new(\"Frame\")\n            p.Size = UDim2.new(0, math.random(2, 5), 0, math.random(2, 5))\n            p.Position = UDim2.new(math.random(), 0, 1.2, 0)\n            p.BackgroundColor3 = T.PRIMARY\n            p.BackgroundTransparency = math.random() * 0.5 + 0.3\n            p.BorderSizePixel = 0\n            p.ZIndex = 10\n            p.Parent = particleContainer\n            local c = Instance.new(\"UICorner\")\n            c.CornerRadius = UDim.new(1, 0)\n            c.Parent = p\n\n            task.spawn(function()\n                while p and p.Parent do\n                    local duration = math.random(6, 14)\n                    p.Position = UDim2.new(math.random(), 0, 1.2, 0)\n                    p.BackgroundTransparency = math.random() * 0.5 + 0.3\n                    TweenService:Create(p, TweenInfo.new(duration, Enum.EasingStyle.Linear), {\n                        Position = UDim2.new(math.random(), 0, -0.2, 0),\n                        BackgroundTransparency = 1,\n                    }):Play()\n                    task.wait(duration)\n                end\n            end)\n        end\n    end\n\n    -- ═══════════════════════════════════════════════\n    -- ⭐ RECTANGULAR DRAG HANDLE\n    -- ═══════════════════════════════════════════════\n    local dragHandle = Instance.new(\"Frame\")\n    dragHandle.Name = \"DragHandle\"\n    dragHandle.Size = UDim2.new(1, 0, 0, 60)\n    dragHandle.BackgroundColor3 = T.BG_DEEP\n    dragHandle.BackgroundTransparency = 0.15\n    dragHandle.BorderSizePixel = 0\n    dragHandle.Active = true\n    dragHandle.ZIndex = 15\n    dragHandle.Parent = panel\n\n    makeDripGradient(dragHandle, {\n        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(20, 12, 35)),\n        ColorSequenceKeypoint.new(0.50, Color3.fromRGB(8, 5, 18)),\n        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(20, 12, 35)),\n    }, 0.5)\n\n    -- ⭐ Rectangle border of the drag handle\n    local dhStroke = Instance.new(\"UIStroke\")\n    dhStroke.Color = T.PRIMARY\n    dhStroke.Thickness = 1.5\n    dhStroke.Transparency = 0.4\n    dhStroke.Parent = dragHandle\n\n    -- ⭐ Animated glowing line at the bottom of the drag\n    local dragLine = Instance.new(\"Frame\")\n    dragLine.Size = UDim2.new(1, 0, 0, 2)\n    dragLine.Position = UDim2.new(0, 0, 1, -2)\n    dragLine.BackgroundColor3 = T.PRIMARY\n    dragLine.BorderSizePixel = 0\n    dragLine.ZIndex = 16\n    dragLine.Parent = dragHandle\n\n    makeDripGradient(dragLine, {\n        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(0, 0, 0)),\n        ColorSequenceKeypoint.new(0.50, T.ACCENT),\n        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 0, 0)),\n    }, 4)\n\n    -- ⭐ Visual grip (small bars)\n    local gripContainer = Instance.new(\"Frame\")\n    gripContainer.Size = UDim2.new(0, 30, 0, 20)\n    gripContainer.Position = UDim2.new(0, 18, 0.5, -10)\n    gripContainer.BackgroundTransparency = 1\n    gripContainer.ZIndex = 16\n    gripContainer.Parent = dragHandle\n\n    for i = 1, 3 do\n        local grip = Instance.new(\"Frame\")\n        grip.Size = UDim2.new(1, 0, 0, 2)\n        grip.Position = UDim2.new(0, 0, 0, (i - 1) * 7)\n        grip.BackgroundColor3 = T.PRIMARY\n        grip.BorderSizePixel = 0\n        grip.ZIndex = 16\n        grip.Parent = gripContainer\n    end\n\n    local titleIcon = Instance.new(\"TextLabel\")\n    titleIcon.Size = UDim2.new(0, 40, 1, 0)\n    titleIcon.Position = UDim2.new(0, 55, 0, 0)\n    titleIcon.BackgroundTransparency = 1\n    titleIcon.Text = \"N\"\n    titleIcon.TextColor3 = T.PRIMARY\n    titleIcon.TextSize = 22\n    titleIcon.Font = Enum.Font.GothamBlack\n    titleIcon.TextXAlignment = Enum.TextXAlignment.Left\n    titleIcon.ZIndex = 16\n    titleIcon.Parent = dragHandle\n\n    task.spawn(function()\n        while titleIcon and titleIcon.Parent do\n            TweenService:Create(titleIcon, TweenInfo.new(1, Enum.EasingStyle.Sine), {\n                TextColor3 = T.ACCENT,\n            }):Play()\n            task.wait(1)\n            TweenService:Create(titleIcon, TweenInfo.new(1, Enum.EasingStyle.Sine), {\n                TextColor3 = T.PRIMARY,\n            }):Play()\n            task.wait(1)\n        end\n    end)\n\n    local title = Instance.new(\"TextLabel\")\n    title.Size = UDim2.new(1, -200, 1, 0)\n    title.Position = UDim2.new(0, 90, 0, 0)\n    title.BackgroundTransparency = 1\n    title.Text = \"NOVA HUB\"\n    title.TextColor3 = T.WHITE\n    title.TextSize = 17\n    title.Font = Enum.Font.GothamBlack\n    title.TextXAlignment = Enum.TextXAlignment.Left\n    title.ZIndex = 16\n    title.Parent = dragHandle\n\n    makeDripGradient(title, {\n        ColorSequenceKeypoint.new(0.00, T.WHITE),\n        ColorSequenceKeypoint.new(0.50, T.PRIMARY),\n        ColorSequenceKeypoint.new(1.00, T.WHITE),\n    }, 3)\n\n    -- MINIMIZE button\n    local minimizeBtn = Instance.new(\"TextButton\")\n    minimizeBtn.Size = UDim2.new(0, 32, 0, 32)\n    minimizeBtn.Position = UDim2.new(1, -80, 0.5, -16)\n    minimizeBtn.BackgroundColor3 = T.WARN\n    minimizeBtn.BorderSizePixel = 0\n    minimizeBtn.Text = \"−\"\n    minimizeBtn.TextColor3 = T.WHITE\n    minimizeBtn.Font = Enum.Font.GothamBold\n    minimizeBtn.TextSize = 20\n    minimizeBtn.AutoButtonColor = false\n    minimizeBtn.ZIndex = 17\n    minimizeBtn.Parent = dragHandle\n\n    -- CLOSE button\n    local closeBtn = Instance.new(\"TextButton\")\n    closeBtn.Size = UDim2.new(0, 32, 0, 32)\n    closeBtn.Position = UDim2.new(1, -42, 0.5, -16)\n    closeBtn.BackgroundColor3 = T.DANGER\n    closeBtn.BorderSizePixel = 0\n    closeBtn.Text = \"X\"\n    closeBtn.TextColor3 = T.WHITE\n    closeBtn.Font = Enum.Font.GothamBold\n    closeBtn.TextSize = 15\n    closeBtn.AutoButtonColor = false\n    closeBtn.ZIndex = 17\n    closeBtn.Parent = dragHandle\n\n    -- ═══════════════════════════════════════════════\n    -- TABS (Scripts / Settings)\n    -- ═══════════════════════════════════════════════\n    local tabBar = Instance.new(\"Frame\")\n    tabBar.Size = UDim2.new(1, -24, 0, 36)\n    tabBar.Position = UDim2.new(0, 12, 0, 72)\n    tabBar.BackgroundColor3 = T.BG_DEEP\n    tabBar.BackgroundTransparency = 0.3\n    tabBar.BorderSizePixel = 0\n    tabBar.ZIndex = 15\n    tabBar.Parent = panel\n\n    local tabList = Instance.new(\"UIListLayout\")\n    tabList.FillDirection = Enum.FillDirection.Horizontal\n    tabList.SortOrder = Enum.SortOrder.LayoutOrder\n    tabList.Parent = tabBar\n\n    local function createTab(text, order)\n        local btn = Instance.new(\"TextButton\")\n        btn.Size = UDim2.new(0.5, 0, 1, 0)\n        btn.BackgroundColor3 = T.CARD\n        btn.BackgroundTransparency = 0.5\n        btn.BorderSizePixel = 0\n        btn.Text = text\n        btn.TextColor3 = T.TEXT_DIM\n        btn.Font = Enum.Font.GothamBold\n        btn.TextSize = 12\n        btn.AutoButtonColor = false\n        btn.LayoutOrder = order\n        btn.ZIndex = 16\n        btn.Parent = tabBar\n\n        return btn\n    end\n\n    local scriptsTab = createTab(\"SCRIPTS\", 1)\n    local settingsTab = createTab(\"SETTINGS\", 2)\n\n    local function setActiveTab(btn)\n        TweenService:Create(btn, TweenInfo.new(0.2), {\n            BackgroundColor3 = T.PRIMARY,\n            BackgroundTransparency = 0,\n        }):Play()\n        btn.TextColor3 = T.WHITE\n    end\n\n    local function setInactiveTab(btn)\n        TweenService:Create(btn, TweenInfo.new(0.2), {\n            BackgroundColor3 = T.CARD,\n            BackgroundTransparency = 0.5,\n        }):Play()\n        btn.TextColor3 = T.TEXT_DIM\n    end\n\n    -- ═══════════════════════════════════════════════\n    -- SCRIPTS PAGE\n    -- ═══════════════════════════════════════════════\n    local content = Instance.new(\"ScrollingFrame\")\n    content.Name = \"ContentScripts\"\n    content.Size = UDim2.new(1, -28, 1, -130)\n    content.Position = UDim2.new(0, 14, 0, 118)\n    content.BackgroundTransparency = 1\n    content.BorderSizePixel = 0\n    content.ScrollBarThickness = 4\n    content.ScrollBarImageColor3 = T.PRIMARY\n    content.CanvasSize = UDim2.new(0, 0, 0, 0)\n    content.AutomaticCanvasSize = Enum.AutomaticSize.Y\n    content.ZIndex = 15\n    content.Parent = panel\n\n    local contentList = Instance.new(\"UIListLayout\")\n    contentList.Padding = UDim.new(0, 10)\n    contentList.SortOrder = Enum.SortOrder.LayoutOrder\n    contentList.Parent = content\n\n    -- ⭐ Create categories\n    local order = 0\n    for _, catData in ipairs(HUB_CATEGORIES) do\n        order = order + 1\n        local catColor = catData.color or T.PRIMARY\n\n        local catHeader = Instance.new(\"Frame\")\n        catHeader.Size = UDim2.new(1, -8, 0, 42)\n        catHeader.BackgroundColor3 = T.BG_DEEP\n        catHeader.BackgroundTransparency = 0.2\n        catHeader.BorderSizePixel = 0\n        catHeader.LayoutOrder = order\n        catHeader.ZIndex = 16\n        catHeader.Parent = content\n\n        makeDripGradient(catHeader, {\n            ColorSequenceKeypoint.new(0.00, T.BG_DEEP),\n            ColorSequenceKeypoint.new(0.50, T.CARD),\n            ColorSequenceKeypoint.new(1.00, T.BG_DEEP),\n        }, 0.5)\n\n        local chStroke = Instance.new(\"UIStroke\")\n        chStroke.Color = catColor\n        chStroke.Thickness = 1.5\n        chStroke.Transparency = 0.3\n        chStroke.Parent = catHeader\n\n        local catBar = Instance.new(\"Frame\")\n        catBar.Size = UDim2.new(0, 4, 1, 0)\n        catBar.Position = UDim2.new(0, 0, 0, 0)\n        catBar.BackgroundColor3 = catColor\n        catBar.BorderSizePixel = 0\n        catBar.ZIndex = 17\n        catBar.Parent = catHeader\n\n        local catLabel = Instance.new(\"TextLabel\")\n        catLabel.Size = UDim2.new(1, -110, 1, 0)\n        catLabel.Position = UDim2.new(0, 22, 0, 0)\n        catLabel.BackgroundTransparency = 1\n        catLabel.Text = catData.name\n        catLabel.TextColor3 = T.WHITE\n        catLabel.Font = Enum.Font.GothamBlack\n        catLabel.TextSize = 16\n        catLabel.TextXAlignment = Enum.TextXAlignment.Left\n        catLabel.ZIndex = 17\n        catLabel.Parent = catHeader\n\n        local catCount = Instance.new(\"TextLabel\")\n        catCount.Size = UDim2.new(0, 90, 1, 0)\n        catCount.Position = UDim2.new(1, -100, 0, 0)\n        catCount.BackgroundTransparency = 1\n        catCount.Text = #catData.scripts .. \" script(s)\"\n        catCount.TextColor3 = catColor\n        catCount.Font = Enum.Font.GothamBold\n        catCount.TextSize = 10\n        catCount.TextXAlignment = Enum.TextXAlignment.Right\n        catCount.ZIndex = 17\n        catCount.Parent = catHeader\n\n        for _, scriptData in ipairs(catData.scripts) do\n            order = order + 1\n\n            local scriptCard = Instance.new(\"Frame\")\n            scriptCard.Size = UDim2.new(1, -8, 0, 78)\n            scriptCard.BackgroundColor3 = T.CARD\n            scriptCard.BackgroundTransparency = 0.2\n            scriptCard.BorderSizePixel = 0\n            scriptCard.LayoutOrder = order\n            scriptCard.ZIndex = 16\n            scriptCard.Parent = content\n\n            local scStroke = Instance.new(\"UIStroke\")\n            scStroke.Color = catColor\n            scStroke.Thickness = 1\n            scStroke.Transparency = 0.6\n            scStroke.Parent = scriptCard\n\n            local cardBar = Instance.new(\"Frame\")\n            cardBar.Size = UDim2.new(0, 3, 1, 0)\n            cardBar.Position = UDim2.new(0, 0, 0, 0)\n            cardBar.BackgroundColor3 = catColor\n            cardBar.BorderSizePixel = 0\n            cardBar.ZIndex = 17\n            cardBar.Parent = scriptCard\n\n            scriptCard.MouseEnter:Connect(function()\n                TweenService:Create(scStroke, TweenInfo.new(0.2), {\n                    Transparency = 0,\n                    Thickness = 2,\n                }):Play()\n                TweenService:Create(scriptCard, TweenInfo.new(0.2), {\n                    BackgroundColor3 = T.PRIMARY_DARK,\n                    BackgroundTransparency = 0.4,\n                }):Play()\n            end)\n            scriptCard.MouseLeave:Connect(function()\n                TweenService:Create(scStroke, TweenInfo.new(0.2), {\n                    Transparency = 0.6,\n                    Thickness = 1,\n                }):Play()\n                TweenService:Create(scriptCard, TweenInfo.new(0.2), {\n                    BackgroundColor3 = T.CARD,\n                    BackgroundTransparency = 0.2,\n                }):Play()\n            end)\n\n            local sName = Instance.new(\"TextLabel\")\n            sName.Size = UDim2.new(1, -140, 0, 26)\n            sName.Position = UDim2.new(0, 20, 0, 12)\n            sName.BackgroundTransparency = 1\n            sName.Text = scriptData.name\n            sName.TextColor3 = T.WHITE\n            sName.Font = Enum.Font.GothamBold\n            sName.TextSize = 15\n            sName.TextXAlignment = Enum.TextXAlignment.Left\n            sName.ZIndex = 17\n            sName.Parent = scriptCard\n\n            local sDesc = Instance.new(\"TextLabel\")\n            sDesc.Size = UDim2.new(1, -140, 0, 18)\n            sDesc.Position = UDim2.new(0, 20, 0, 44)\n            sDesc.BackgroundTransparency = 1\n            sDesc.Text = scriptData.description or \"\"\n            sDesc.TextColor3 = T.TEXT_DIM\n            sDesc.Font = Enum.Font.Gotham\n            sDesc.TextSize = 11\n            sDesc.TextXAlignment = Enum.TextXAlignment.Left\n            sDesc.TextTruncate = Enum.TextTruncate.AtEnd\n            sDesc.ZIndex = 17\n            sDesc.Parent = scriptCard\n\n            local execBtn = Instance.new(\"TextButton\")\n            execBtn.Size = UDim2.new(0, 105, 0, 42)\n            execBtn.Position = UDim2.new(1, -118, 0.5, -21)\n            execBtn.BackgroundColor3 = T.PRIMARY\n            execBtn.BorderSizePixel = 0\n            execBtn.Text = \"EXECUTE\"\n            execBtn.TextColor3 = T.WHITE\n            execBtn.Font = Enum.Font.GothamBlack\n            execBtn.TextSize = 11\n            execBtn.AutoButtonColor = false\n            execBtn.ZIndex = 18\n            execBtn.Parent = scriptCard\n\n            makeDripGradient(execBtn, {\n                ColorSequenceKeypoint.new(0.00, T.PRIMARY_DARK),\n                ColorSequenceKeypoint.new(0.50, T.PRIMARY),\n                ColorSequenceKeypoint.new(1.00, T.PRIMARY_DARK),\n            }, 2)\n\n            local ebStroke = Instance.new(\"UIStroke\")\n            ebStroke.Color = T.ACCENT\n            ebStroke.Thickness = 1\n            ebStroke.Transparency = 0.3\n            ebStroke.Parent = execBtn\n\n            execBtn.MouseButton1Down:Connect(function()\n                TweenService:Create(execBtn, TweenInfo.new(0.08), {\n                    Size = UDim2.new(0, 100, 0, 40),\n                }):Play()\n            end)\n            execBtn.MouseButton1Up:Connect(function()\n                TweenService:Create(execBtn, TweenInfo.new(0.1), {\n                    Size = UDim2.new(0, 105, 0, 42),\n                }):Play()\n            end)\n            execBtn.MouseLeave:Connect(function()\n                TweenService:Create(execBtn, TweenInfo.new(0.1), {\n                    Size = UDim2.new(0, 105, 0, 42),\n                }):Play()\n            end)\n\n            execBtn.MouseButton1Click:Connect(function()\n                execBtn.Text = \"...\"\n                task.spawn(function()\n                    executeScript(scriptData, Settings.closeAfterExec)\n                    task.wait(0.5)\n                    execBtn.Text = \"EXECUTE\"\n                end)\n            end)\n        end\n    end\n\n    -- ═══════════════════════════════════════════════\n    -- SETTINGS PAGE\n    -- ═══════════════════════════════════════════════\n    local settingsContent = Instance.new(\"ScrollingFrame\")\n    settingsContent.Name = \"ContentSettings\"\n    settingsContent.Size = UDim2.new(1, -28, 1, -130)\n    settingsContent.Position = UDim2.new(0, 14, 0, 118)\n    settingsContent.BackgroundTransparency = 1\n    settingsContent.BorderSizePixel = 0\n    settingsContent.ScrollBarThickness = 4\n    settingsContent.ScrollBarImageColor3 = T.PRIMARY\n    settingsContent.CanvasSize = UDim2.new(0, 0, 0, 0)\n    settingsContent.AutomaticCanvasSize = Enum.AutomaticSize.Y\n    settingsContent.Visible = false\n    settingsContent.ZIndex = 15\n    settingsContent.Parent = panel\n\n    local settingsList = Instance.new(\"UIListLayout\")\n    settingsList.Padding = UDim.new(0, 10)\n    settingsList.SortOrder = Enum.SortOrder.LayoutOrder\n    settingsList.Parent = settingsContent\n\n    local settingsOrder = 0\n    local function nextOrder() settingsOrder = settingsOrder + 1 return settingsOrder end\n\n    local function addSettingSection(title)\n        local sec = Instance.new(\"Frame\")\n        sec.Size = UDim2.new(1, -8, 0, 30)\n        sec.BackgroundColor3 = T.BG_DEEP\n        sec.BackgroundTransparency = 0.2\n        sec.BorderSizePixel = 0\n        sec.LayoutOrder = nextOrder()\n        sec.ZIndex = 16\n        sec.Parent = settingsContent\n\n        local secStroke = Instance.new(\"UIStroke\")\n        secStroke.Color = T.PRIMARY\n        secStroke.Thickness = 1\n        secStroke.Transparency = 0.5\n        secStroke.Parent = sec\n\n        local lbl = Instance.new(\"TextLabel\")\n        lbl.Size = UDim2.new(1, -30, 1, 0)\n        lbl.Position = UDim2.new(0, 16, 0, 0)\n        lbl.BackgroundTransparency = 1\n        lbl.Text = title\n        lbl.TextColor3 = T.PRIMARY\n        lbl.Font = Enum.Font.GothamBlack\n        lbl.TextSize = 12\n        lbl.TextXAlignment = Enum.TextXAlignment.Left\n        lbl.ZIndex = 17\n        lbl.Parent = sec\n    end\n\n    local function addToggle(labelText, getter, setter)\n        local card = Instance.new(\"Frame\")\n        card.Size = UDim2.new(1, -8, 0, 44)\n        card.BackgroundColor3 = T.CARD\n        card.BackgroundTransparency = 0.2\n        card.BorderSizePixel = 0\n        card.LayoutOrder = nextOrder()\n        card.ZIndex = 16\n        card.Parent = settingsContent\n\n        local cs = Instance.new(\"UIStroke\")\n        cs.Color = T.PRIMARY\n        cs.Thickness = 1\n        cs.Transparency = 0.6\n        cs.Parent = card\n\n        local lbl = Instance.new(\"TextLabel\")\n        lbl.Size = UDim2.new(1, -70, 1, 0)\n        lbl.Position = UDim2.new(0, 16, 0, 0)\n        lbl.BackgroundTransparency = 1\n        lbl.Text = labelText\n        lbl.TextColor3 = T.TEXT\n        lbl.Font = Enum.Font.GothamBold\n        lbl.TextSize = 13\n        lbl.TextXAlignment = Enum.TextXAlignment.Left\n        lbl.ZIndex = 17\n        lbl.Parent = card\n\n        -- Toggle switch\n        local toggleBg = Instance.new(\"Frame\")\n        toggleBg.Size = UDim2.new(0, 46, 0, 24)\n        toggleBg.Position = UDim2.new(1, -60, 0.5, -12)\n        toggleBg.BackgroundColor3 = getter() and T.PRIMARY or T.BG_DEEP\n        toggleBg.BorderSizePixel = 0\n        toggleBg.ZIndex = 17\n        toggleBg.Parent = card\n\n        local tCorner = Instance.new(\"UICorner\")\n        tCorner.CornerRadius = UDim.new(1, 0)\n        tCorner.Parent = toggleBg\n\n        local knob = Instance.new(\"Frame\")\n        knob.Size = UDim2.new(0, 20, 0, 20)\n        knob.Position = getter() and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)\n        knob.BackgroundColor3 = T.WHITE\n        knob.BorderSizePixel = 0\n        knob.ZIndex = 18\n        knob.Parent = toggleBg\n\n        local kCorner = Instance.new(\"UICorner\")\n        kCorner.CornerRadius = UDim.new(1, 0)\n        kCorner.Parent = knob\n\n        local btn = Instance.new(\"TextButton\")\n        btn.Size = UDim2.new(1, 0, 1, 0)\n        btn.BackgroundTransparency = 1\n        btn.Text = \"\"\n        btn.AutoButtonColor = false\n        btn.ZIndex = 19\n        btn.Parent = card\n\n        btn.MouseButton1Click:Connect(function()\n            local newVal = not getter()\n            setter(newVal)\n\n            TweenService:Create(toggleBg, TweenInfo.new(0.2), {\n                BackgroundColor3 = newVal and T.PRIMARY or T.BG_DEEP,\n            }):Play()\n            TweenService:Create(knob, TweenInfo.new(0.2), {\n                Position = newVal and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 2, 0.5, -10),\n            }):Play()\n\n            saveConfig()\n        end)\n    end\n\n    local function addSlider(labelText, min, max, def, onChanged, step)\n        step = step or 1\n\n        local card = Instance.new(\"Frame\")\n        card.Size = UDim2.new(1, -8, 0, 60)\n        card.BackgroundColor3 = T.CARD\n        card.BackgroundTransparency = 0.2\n        card.BorderSizePixel = 0\n        card.LayoutOrder = nextOrder()\n        card.ZIndex = 16\n        card.Parent = settingsContent\n\n        local cs = Instance.new(\"UIStroke\")\n        cs.Color = T.PRIMARY\n        cs.Thickness = 1\n        cs.Transparency = 0.6\n        cs.Parent = card\n\n        local lbl = Instance.new(\"TextLabel\")\n        lbl.Size = UDim2.new(1, -80, 0, 20)\n        lbl.Position = UDim2.new(0, 16, 0, 8)\n        lbl.BackgroundTransparency = 1\n        lbl.Text = labelText\n        lbl.TextColor3 = T.TEXT\n        lbl.Font = Enum.Font.GothamBold\n        lbl.TextSize = 12\n        lbl.TextXAlignment = Enum.TextXAlignment.Left\n        lbl.ZIndex = 17\n        lbl.Parent = card\n\n        local valLbl = Instance.new(\"TextLabel\")\n        valLbl.Size = UDim2.new(0, 60, 0, 20)\n        valLbl.Position = UDim2.new(1, -76, 0, 8)\n        valLbl.BackgroundTransparency = 1\n        valLbl.Text = tostring(def)\n        valLbl.TextColor3 = T.PRIMARY\n        valLbl.Font = Enum.Font.GothamBlack\n        valLbl.TextSize = 12\n        valLbl.TextXAlignment = Enum.TextXAlignment.Right\n        valLbl.ZIndex = 17\n        valLbl.Parent = card\n\n        local track = Instance.new(\"Frame\")\n        track.Size = UDim2.new(1, -32, 0, 6)\n        track.Position = UDim2.new(0, 16, 0, 40)\n        track.BackgroundColor3 = T.BG_DEEP\n        track.BorderSizePixel = 0\n        track.ZIndex = 17\n        track.Parent = card\n\n        local tCorner = Instance.new(\"UICorner\")\n        tCorner.CornerRadius = UDim.new(1, 0)\n        tCorner.Parent = track\n\n        local frac = (def - min) / math.max(1e-9, max - min)\n        local fill = Instance.new(\"Frame\")\n        fill.Size = UDim2.new(frac, 0, 1, 0)\n        fill.BackgroundColor3 = T.PRIMARY\n        fill.BorderSizePixel = 0\n        fill.ZIndex = 18\n        fill.Parent = track\n\n        local fCorner = Instance.new(\"UICorner\")\n        fCorner.CornerRadius = UDim.new(1, 0)\n        fCorner.Parent = fill\n\n        local hit = Instance.new(\"TextButton\")\n        hit.Size = UDim2.new(1, 20, 0, 30)\n        hit.Position = UDim2.new(0, -10, 0.5, -15)\n        hit.BackgroundTransparency = 1\n        hit.Text = \"\"\n        hit.AutoButtonColor = false\n        hit.ZIndex = 19\n        hit.Parent = track\n\n        local dragging = false\n        local function setFromX(px)\n            local ap = track.AbsolutePosition.X\n            local as = track.AbsoluteSize.X\n            local f = math.clamp((px - ap) / as, 0, 1)\n            local v = min + (max - min) * f\n            v = math.floor(v / step + 0.5) * step\n            fill.Size = UDim2.new((v - min) / math.max(1e-9, max - min), 0, 1, 0)\n            valLbl.Text = tostring(v)\n            if onChanged then pcall(onChanged, v) end\n        end\n\n        hit.InputBegan:Connect(function(inp)\n            if inp.UserInputType == Enum.UserInputType.MouseButton1\n            or inp.UserInputType == Enum.UserInputType.Touch then\n                dragging = true\n                setFromX(inp.Position.X)\n            end\n        end)\n        UserInputService.InputChanged:Connect(function(inp)\n            if dragging and (inp.UserInputType == Enum.UserInputType.MouseMovement\n            or inp.UserInputType == Enum.UserInputType.Touch) then\n                setFromX(inp.Position.X)\n            end\n        end)\n        UserInputService.InputEnded:Connect(function(inp)\n            if inp.UserInputType == Enum.UserInputType.MouseButton1\n            or inp.UserInputType == Enum.UserInputType.Touch then\n                dragging = false\n                saveConfig()\n            end\n        end)\n    end\n\n    -- ⭐ SECTION: NOTIFICATIONS\n    addSettingSection(\"NOTIFICATIONS\")\n    addToggle(\"Enable notifications\",\n        function() return Settings.notifications end,\n        function(v) Settings.notifications = v end)\n    addSlider(\"Duration (seconds)\", 1, 10, Settings.notifDuration, function(v)\n        Settings.notifDuration = v\n    end, 0.5)\n\n    -- ⭐ SECTION: APPEARANCE\n    addSettingSection(\"APPEARANCE\")\n    addToggle(\"Particles\",\n        function() return Settings.particles end,\n        function(v) Settings.particles = v end)\n    addSlider(\"Particle count\", 10, 150, Settings.particleCount, function(v)\n        Settings.particleCount = v\n    end, 10)\n    addToggle(\"Glow effect\",\n        function() return Settings.glow end,\n        function(v) Settings.glow = v end)\n\n    -- ⭐ SECTION: THEME (color buttons)\n    addSettingSection(\"THEME\")\n    local themeCard = Instance.new(\"Frame\")\n    themeCard.Size = UDim2.new(1, -8, 0, 70)\n    themeCard.BackgroundColor3 = T.CARD\n    themeCard.BackgroundTransparency = 0.2\n    themeCard.BorderSizePixel = 0\n    themeCard.LayoutOrder = nextOrder()\n    themeCard.ZIndex = 16\n    themeCard.Parent = settingsContent\n\n    local tcStroke = Instance.new(\"UIStroke\")\n    tcStroke.Color = T.PRIMARY\n    tcStroke.Thickness = 1\n    tcStroke.Transparency = 0.6\n    tcStroke.Parent = themeCard\n\n    local tcLabel = Instance.new(\"TextLabel\")\n    tcLabel.Size = UDim2.new(1, -32, 0, 20)\n    tcLabel.Position = UDim2.new(0, 16, 0, 8)\n    tcLabel.BackgroundTransparency = 1\n    tcLabel.Text = \"Theme color\"\n    tcLabel.TextColor3 = T.TEXT\n    tcLabel.Font = Enum.Font.GothamBold\n    tcLabel.TextSize = 12\n    tcLabel.TextXAlignment = Enum.TextXAlignment.Left\n    tcLabel.ZIndex = 17\n    tcLabel.Parent = themeCard\n\n    local colorRow = Instance.new(\"Frame\")\n    colorRow.Size = UDim2.new(1, -32, 0, 32)\n    colorRow.Position = UDim2.new(0, 16, 0, 32)\n    colorRow.BackgroundTransparency = 1\n    colorRow.ZIndex = 17\n    colorRow.Parent = themeCard\n\n    local colorList = Instance.new(\"UIListLayout\")\n    colorList.FillDirection = Enum.FillDirection.Horizontal\n    colorList.Padding = UDim.new(0, 8)\n    colorList.SortOrder = Enum.SortOrder.LayoutOrder\n    colorList.Parent = colorRow\n\n    for _, themeName in ipairs({\"violet\", \"blue\", \"cyan\", \"pink\", \"green\", \"orange\"}) do\n        local themeData = THEMES[themeName]\n        local colorBtn = Instance.new(\"TextButton\")\n        colorBtn.Size = UDim2.new(0, 30, 0, 30)\n        colorBtn.BackgroundColor3 = themeData.PRIMARY\n        colorBtn.BorderSizePixel = 0\n        colorBtn.Text = Settings.theme == themeName and \"X\" or \"\"\n        colorBtn.TextColor3 = T.WHITE\n        colorBtn.Font = Enum.Font.GothamBlack\n        colorBtn.TextSize = 12\n        colorBtn.AutoButtonColor = false\n        colorBtn.ZIndex = 18\n        colorBtn.Parent = colorRow\n\n        local cCorner = Instance.new(\"UICorner\")\n        cCorner.CornerRadius = UDim.new(1, 0)\n        cCorner.Parent = colorBtn\n\n        local cStroke = Instance.new(\"UIStroke\")\n        cStroke.Color = T.WHITE\n        cStroke.Thickness = Settings.theme == themeName and 2 or 0\n        cStroke.Transparency = 0\n        cStroke.Parent = colorBtn\n\n        colorBtn.MouseButton1Click:Connect(function()\n            Settings.theme = themeName\n            saveConfig()\n            showNotif(\"Theme\", \"Theme changed to \" .. themeName .. \". Re-execute to apply.\", \"success\")\n\n            -- Update buttons\n            for _, c in ipairs(colorRow:GetChildren()) do\n                if c:IsA(\"TextButton\") then\n                    c.Text = \"\"\n                    local s = c:FindFirstChildOfClass(\"UIStroke\")\n                    if s then s.Thickness = 0 end\n                end\n            end\n            colorBtn.Text = \"X\"\n            cStroke.Thickness = 2\n        end)\n    end\n\n    -- ⭐ SECTION: SCRIPT\n    addSettingSection(\"SCRIPT\")\n    addToggle(\"Close hub after execution\",\n        function() return Settings.closeAfterExec end,\n        function(v) Settings.closeAfterExec = v end)\n\n    -- ⭐ SECTION: ABOUT\n    addSettingSection(\"ABOUT\")\n    local aboutCard = Instance.new(\"Frame\")\n    aboutCard.Size = UDim2.new(1, -8, 0, 60)\n    aboutCard.BackgroundColor3 = T.CARD\n    aboutCard.BackgroundTransparency = 0.2\n    aboutCard.BorderSizePixel = 0\n    aboutCard.LayoutOrder = nextOrder()\n    aboutCard.ZIndex = 16\n    aboutCard.Parent = settingsContent\n\n    local acStroke = Instance.new(\"UIStroke\")\n    acStroke.Color = T.PRIMARY\n    acStroke.Thickness = 1\n    acStroke.Transparency = 0.6\n    acStroke.Parent = aboutCard\n\n    local aboutTitle = Instance.new(\"TextLabel\")\n    aboutTitle.Size = UDim2.new(1, -32, 0, 20)\n    aboutTitle.Position = UDim2.new(0, 16, 0, 10)\n    aboutTitle.BackgroundTransparency = 1\n    aboutTitle.Text = \"Nova Hub v4\"\n    aboutTitle.TextColor3 = T.WHITE\n    aboutTitle.Font = Enum.Font.GothamBlack\n    aboutTitle.TextSize = 14\n    aboutTitle.TextXAlignment = Enum.TextXAlignment.Left\n    aboutTitle.ZIndex = 17\n    aboutTitle.Parent = aboutCard\n\n    local aboutDesc = Instance.new(\"TextLabel\")\n    aboutDesc.Size = UDim2.new(1, -32, 0, 16)\n    aboutDesc.Position = UDim2.new(0, 16, 0, 34)\n    aboutDesc.BackgroundTransparency = 1\n    aboutDesc.Text = \"Theme: \" .. Settings.theme .. \" · \" .. #HUB_CATEGORIES .. \" categories\"\n    aboutDesc.TextColor3 = T.TEXT_DIM\n    aboutDesc.Font = Enum.Font.Gotham\n    aboutDesc.TextSize = 11\n    aboutDesc.TextXAlignment = Enum.TextXAlignment.Left\n    aboutDesc.ZIndex = 17\n    aboutDesc.Parent = aboutCard\n\n    -- ⭐ Tab switching\n    local function showScriptsTab()\n        content.Visible = true\n        settingsContent.Visible = false\n        setActiveTab(scriptsTab)\n        setInactiveTab(settingsTab)\n    end\n\n    local function showSettingsTab()\n        content.Visible = false\n        settingsContent.Visible = true\n        setActiveTab(settingsTab)\n        setInactiveTab(scriptsTab)\n    end\n\n    scriptsTab.MouseButton1Click:Connect(showScriptsTab)\n    settingsTab.MouseButton1Click:Connect(showSettingsTab)\n\n    showScriptsTab()\n\n    -- ═══════════════════════════════════════════════\n    -- UI DRAG (on the rectangle)\n    -- ═══════════════════════════════════════════════\n    local dragging, dragStart, startPos\n\n    dragHandle.InputBegan:Connect(function(input)\n        if input.UserInputType == Enum.UserInputType.MouseButton1\n        or input.UserInputType == Enum.UserInputType.Touch then\n            dragging = true\n            dragStart = Vector2.new(input.Position.X, input.Position.Y)\n            startPos = panel.Position\n\n            TweenService:Create(pStroke, TweenInfo.new(0.2), {\n                Thickness = 3,\n                Transparency = 0,\n            }):Play()\n            TweenService:Create(dhStroke, TweenInfo.new(0.2), {\n                Thickness = 2.5,\n                Transparency = 0,\n            }):Play()\n            if Settings.glow and panel:FindFirstChildOfClass(\"ImageLabel\") then\n                TweenService:Create(panel:FindFirstChildOfClass(\"ImageLabel\"), TweenInfo.new(0.2), {\n                    ImageTransparency = 0.6,\n                }):Play()\n            end\n\n            input.Changed:Connect(function()\n                if input.UserInputState == Enum.UserInputState.End then\n                    dragging = false\n                    TweenService:Create(pStroke, TweenInfo.new(0.3), {\n                        Thickness = 2,\n                        Transparency = 0.2,\n                    }):Play()\n                    TweenService:Create(dhStroke, TweenInfo.new(0.3), {\n                        Thickness = 1.5,\n                        Transparency = 0.4,\n                    }):Play()\n                end\n            end)\n        end\n    end)\n\n    UserInputService.InputChanged:Connect(function(input)\n        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement\n        or input.UserInputType == Enum.UserInputType.Touch) then\n            local currentPos = Vector2.new(input.Position.X, input.Position.Y)\n            local delta = currentPos - dragStart\n            panel.Position = UDim2.new(\n                startPos.X.Scale, startPos.X.Offset + delta.X,\n                startPos.Y.Scale, startPos.Y.Offset + delta.Y\n            )\n        end\n    end)\n\n    -- ═══════════════════════════════════════════════\n    -- MINIMIZE\n    -- ═══════════════════════════════════════════════\n    local minimized = false\n    local miniBtn = nil\n\n    local function createMiniBtn()\n        if miniBtn and miniBtn.Parent then miniBtn:Destroy() end\n\n        miniBtn = Instance.new(\"TextButton\")\n        miniBtn.Size = UDim2.new(0, 60, 0, 60)\n        miniBtn.Position = UDim2.new(1, -80, 0, 20)\n        miniBtn.BackgroundColor3 = T.BG_DEEP\n        miniBtn.BackgroundTransparency = 0.1\n        miniBtn.BorderSizePixel = 0\n        miniBtn.Text = \"N\"\n        miniBtn.TextColor3 = T.PRIMARY\n        miniBtn.Font = Enum.Font.GothamBlack\n        miniBtn.TextSize = 24\n        miniBtn.AutoButtonColor = false\n        miniBtn.ZIndex = 999999\n        miniBtn.Parent = screenGui\n\n        makeDripGradient(miniBtn, {\n            ColorSequenceKeypoint.new(0.00, T.BG_DEEP),\n            ColorSequenceKeypoint.new(0.50, T.CARD),\n            ColorSequenceKeypoint.new(1.00, T.BG_DEEP),\n        }, 2)\n\n        local mbStroke = Instance.new(\"UIStroke\")\n        mbStroke.Color = T.PRIMARY\n        mbStroke.Thickness = 2\n        mbStroke.Transparency = 0.2\n        mbStroke.Parent = miniBtn\n\n        if Settings.glow then\n            local mGlow = Instance.new(\"ImageLabel\")\n            mGlow.Size = UDim2.new(1, 40, 1, 40)\n            mGlow.Position = UDim2.new(0, -20, 0, -20)\n            mGlow.BackgroundTransparency = 1\n            mGlow.Image = \"rbxassetid://5028857084\"\n            mGlow.ImageColor3 = T.PRIMARY\n            mGlow.ImageTransparency = 0.7\n            mGlow.ScaleType = Enum.ScaleType.Slice\n            mGlow.SliceCenter = Rect.new(24, 24, 276, 276)\n            mGlow.ZIndex = 999998\n            mGlow.Parent = miniBtn\n\n            task.spawn(function()\n                while mGlow and mGlow.Parent do\n                    TweenService:Create(mGlow, TweenInfo.new(1, Enum.EasingStyle.Sine), {\n                        ImageTransparency = 0.5,\n                    }):Play()\n                    task.wait(1)\n                    TweenService:Create(mGlow, TweenInfo.new(1, Enum.EasingStyle.Sine), {\n                        ImageTransparency = 0.8,\n                    }):Play()\n                    task.wait(1)\n                end\n            end)\n        end\n\n        miniBtn.MouseButton1Click:Connect(function()\n            minimized = false\n            panel.Visible = true\n            panel.Size = UDim2.new(0, 0, 0, 0)\n            panel.Position = UDim2.new(0.5, 0, 0.5, 0)\n            TweenService:Create(panel, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {\n                Size = UDim2.new(0, 520, 0, 580),\n                Position = UDim2.new(0.5, -260, 0.5, -290),\n            }):Play()\n            if miniBtn and miniBtn.Parent then\n                miniBtn:Destroy()\n                miniBtn = nil\n            end\n        end)\n    end\n\n    minimizeBtn.MouseButton1Click:Connect(function()\n        if minimized then return end\n        minimized = true\n\n        TweenService:Create(panel, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {\n            Size = UDim2.new(0, 0, 0, 0),\n            Position = UDim2.new(0.5, 0, 0.5, 0),\n        }):Play()\n\n        task.wait(0.4)\n        panel.Visible = false\n        panel.Size = UDim2.new(0, 520, 0, 580)\n        panel.Position = UDim2.new(0.5, -260, 0.5, -290)\n\n        createMiniBtn()\n    end)\n\n    -- ═══════════════════════════════════════════════\n    -- CLOSE\n    -- ═══════════════════════════════════════════════\n    local function closeHub()\n        TweenService:Create(panel, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {\n            Size = UDim2.new(0, 0, 0, 0),\n            Position = UDim2.new(0.5, 0, 0.5, 0),\n        }):Play()\n        task.wait(0.45)\n        if miniBtn and miniBtn.Parent then miniBtn:Destroy() end\n        screenGui:Destroy()\n    end\n\n    closeBtn.MouseButton1Click:Connect(closeHub)\n    _G.NovaHub_Close = closeHub\n\n    -- ═══════════════════════════════════════════════\n    -- ENTRANCE ANIMATION\n    -- ═══════════════════════════════════════════════\n    panel.Size = UDim2.new(0, 0, 0, 0)\n    panel.Position = UDim2.new(0.5, 0, 0.5, 0)\n    TweenService:Create(panel, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {\n        Size = UDim2.new(0, 520, 0, 580),\n        Position = UDim2.new(0.5, -260, 0.5, -290),\n    }):Play()\nend\n\n-- ═══════════════════════════════════════════════\n-- 🚀 START\n-- ═══════════════════════════════════════════════\nshowLoadingScreen(function()\n    createUI()\n    task.delay(0.3, function()\n        showNotif(\"Nova Hub\", \"Hub loaded\", \"success\")\n    end)\nend)\n\nprint(\"[NovaHub] Ultimate Edition loaded\")",
+      "description": "",
+      "version": "v1.2",
+      "createdAt": 1790069364997,
+      "views": 6,
+      "requireKey": true
+    },
+    "fe007f872f185b52": {
+      "id": "fe007f872f185b52",
+      "name": "haha",
+      "content": "-- =========================================================\n-- SERVER FINDER — Skibidi UI edition\n-- Onglet Serveurs : liste + bouton \"Rejoindre\"\n-- Onglet Settings : serveur aléatoire + palette de couleurs\n-- =========================================================\n\nlocal Skibidi = loadstring(game:HttpGet(\"https://raw.githubusercontent.com/Pjdojefoejhfuh/ad/refs/heads/main/zz\"))()\nSkibidi.SetTheme(\"gold\")\n\n-- =========================================================\n-- SERVICES\n-- =========================================================\nlocal Players          = game:GetService(\"Players\")\nlocal HttpService      = game:GetService(\"HttpService\")\nlocal TeleportService  = game:GetService(\"TeleportService\")\nlocal MarketplaceService = game:GetService(\"MarketplaceService\")\nlocal LocalPlayer      = Players.LocalPlayer\n\n-- =========================================================\n-- FONCTION HTTP\n-- =========================================================\nlocal requestFunc = nil\nif syn and syn.request then\n    requestFunc = syn.request\nelseif http and http.request then\n    requestFunc = http.request\nelseif http_request then\n    requestFunc = http_request\nelseif fluxus and fluxus.request then\n    requestFunc = fluxus.request\nelseif request then\n    requestFunc = request\nend\n\nif not requestFunc then\n    warn(\"[ServerFinder] Aucune fonction HTTP trouvée !\")\n    return\nend\n\n-- =========================================================\n-- NOM DU JEU\n-- =========================================================\nlocal gameName = \"Unknown\"\npcall(function()\n    local info = MarketplaceService:GetProductInfo(game.PlaceId)\n    gameName = info.Name or gameName\nend)\n\n-- =========================================================\n-- COULEURS\n-- =========================================================\nlocal C = {\n    Void3 = Color3.fromRGB(28, 24, 36),\n    Green = Color3.fromRGB(60, 230, 100),\n    Red   = Color3.fromRGB(255, 60, 80),\n    Cyan  = Color3.fromRGB(60, 210, 230),\n    Orange= Color3.fromRGB(255, 150, 60),\n    Silver2 = Color3.fromRGB(160, 150, 175),\n    Silver3 = Color3.fromRGB(110, 100, 130),\n    Gold  = Color3.fromRGB(255, 195, 50),\n}\n\n-- Palette de couleurs pour le thème\nlocal ThemeColors = {\n    Gold     = Color3.fromRGB(255, 195, 50),\n    Purple   = Color3.fromRGB(180, 100, 255),\n    Cyan     = Color3.fromRGB(60, 210, 230),\n    Red      = Color3.fromRGB(255, 70, 90),\n    Green    = Color3.fromRGB(60, 230, 100),\n    Pink     = Color3.fromRGB(255, 100, 180),\n    Orange   = Color3.fromRGB(255, 150, 60),\n    Blue     = Color3.fromRGB(80, 160, 240),\n}\n\n-- =========================================================\n-- RÉCUPÉRATION DES SERVEURS\n-- =========================================================\nlocal function fetchServers()\n    local url = string.format(\n        \"https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Asc&limit=100\",\n        game.PlaceId\n    )\n    local ok, response = pcall(function()\n        return requestFunc({ Url = url, Method = \"GET\" })\n    end)\n    if not ok or not response or not response.Body then\n        return {}\n    end\n    local decodeOk, data = pcall(function()\n        return HttpService:JSONDecode(response.Body)\n    end)\n    if not decodeOk or not data or not data.data then\n        return {}\n    end\n    return data.data\nend\n\n-- =========================================================\n-- VARIABLES\n-- =========================================================\nlocal currentAccent = ThemeColors.Gold\nlocal serverRows = {} -- pour pouvoir vider l'onglet\n\n-- =========================================================\n-- FONCTIONS UI\n-- =========================================================\nlocal skPanel, skTabServers, skTabSettings\n\n-- Construit la liste des serveurs dans l'onglet\nlocal function refreshServerList()\n    -- Vide l'ancien contenu (les labels/boutons précédents)\n    for _, inst in ipairs(serverRows) do\n        pcall(function() inst:Destroy() end)\n    end\n    serverRows = {}\n\n    local servers = fetchServers()\n\n    if #servers == 0 then\n        local lbl = Skibidi.CreateLabel(skTabServers, {\n            Text  = \"Aucun serveur trouvé (proxy bloqué ?)\",\n            Color = C.Red,\n        })\n        table.insert(serverRows, lbl)\n        return\n    end\n\n    -- Trie par nombre de joueurs croissant\n    table.sort(servers, function(a, b)\n        return a.playing < b.playing\n    end)\n\n    for i, srv in ipairs(servers) do\n        if i > 25 then break end\n\n        -- Label d'info du serveur\n        local lbl = Skibidi.CreateLabel(skTabServers, {\n            Text  = string.format(\"Serveur #%d · %d/%d joueurs\", i, srv.playing, srv.maxPlayers),\n            Color = C.Silver2,\n        })\n        table.insert(serverRows, lbl)\n\n        -- Bouton Rejoindre\n        local btn = Skibidi.CreateButton(skTabServers, {\n            Text  = \"▶  Rejoindre\",\n            Icon  = \"log-in\",\n            Color = C.Void3,\n            OnClick = function()\n                if srv.id == game.JobId then\n                    Skibidi.ShowNotification(\"Info\", \"Tu es déjà dans ce serveur\", 2, \"info\")\n                    return\n                end\n                Skibidi.ShowNotification(\"Téléportation\", \"Connexion au serveur #\" .. i, 2, \"success\")\n                TeleportService:TeleportToPlaceInstance(game.PlaceId, srv.id, LocalPlayer)\n            end,\n        })\n        table.insert(serverRows, btn)\n    end\nend\n\n-- Serveur aléatoire (utilisé par Settings)\nlocal function joinRandomServer()\n    local servers = fetchServers()\n    if #servers == 0 then\n        Skibidi.ShowNotification(\"Erreur\", \"Aucun serveur trouvé\", 2, \"error\")\n        return\n    end\n\n    -- Filtre : pas plein et pas le serveur actuel\n    local pool = {}\n    for _, srv in ipairs(servers) do\n        if srv.playing < srv.maxPlayers and srv.id ~= game.JobId then\n            table.insert(pool, srv)\n        end\n    end\n\n    if #pool == 0 then\n        Skibidi.ShowNotification(\"Erreur\", \"Aucun serveur disponible\", 2, \"error\")\n        return\n    end\n\n    local chosen = pool[math.random(1, #pool)]\n    Skibidi.ShowNotification(\"Serveur aléatoire\", \n        string.format(\"%d/%d joueurs\", chosen.playing, chosen.maxPlayers), 2, \"success\")\n    TeleportService:TeleportToPlaceInstance(game.PlaceId, chosen.id, LocalPlayer)\nend\n\n-- Change la couleur d'accent du thème\nlocal function setAccent(name)\n    local c = ThemeColors[name]\n    if not c then return end\n    currentAccent = c\n    Skibidi.Theme.Accent = c\n    Skibidi.Theme.AccentSec = Color3.new(\n        math.min(c.R + 0.15, 1),\n        math.min(c.G + 0.15, 1),\n        math.min(c.B + 0.15, 1)\n    )\n    Skibidi.ShowNotification(\"Thème\", \"Couleur : \" .. name, 2, \"info\")\nend\n\n-- =========================================================\n-- CRÉATION DU PANEL\n-- =========================================================\nlocal function createGui()\n\n    skPanel = Skibidi.CreatePanel({\n        Name     = \"ServerFinder\",\n        Title    = \"SERVER FINDER\",\n        SubTitle = gameName .. \" · v1.0\",\n        Icon     = \"server\",\n        Width    = 340,\n        Height   = 540,\n        Tabs     = {\n            { Name = \"Serveurs\", Icon = \"server\"   },\n            { Name = \"Settings\", Icon = \"settings\" },\n        },\n        DefaultTab = 1,\n        Search     = false,\n        Scaler     = true,\n        ConfirmClose = false,\n    })\n\n    -- Récupère les onglets\n    skTabServers  = skPanel.GetTab(1)\n    skTabSettings = skPanel.GetTab(2)\n\n    -- =====================================================\n    -- ONGLET SERVEURS\n    -- =====================================================\n    Skibidi.CreateSection(skTabServers, { Title = \"Liste des serveurs\", Open = true })\n\n    Skibidi.CreateButton(skTabServers, {\n        Text  = \"🔄  Actualiser la liste\",\n        Icon  = \"refresh-cw\",\n        Color = C.Void3,\n        OnClick = function()\n            Skibidi.ShowNotification(\"Chargement\", \"Récupération des serveurs...\", 2, \"info\")\n            task.spawn(refreshServerList)\n        end,\n    })\n\n    -- Chargement initial\n    task.spawn(refreshServerList)\n\n    -- =====================================================\n    -- ONGLET SETTINGS\n    -- =====================================================\n    Skibidi.CreateSection(skTabSettings, { Title = \"Serveur\", Open = true })\n\n    Skibidi.CreateButton(skTabSettings, {\n        Text  = \"🎲  Serveur aléatoire\",\n        Icon  = \"shuffle\",\n        Color = C.Void3,\n        OnClick = function()\n            joinRandomServer()\n        end,\n    })\n\n    Skibidi.CreateLabel(skTabSettings, {\n        Text  = \"Rejoint un serveur au hasard (pas plein).\",\n        Color = C.Silver3,\n    })\n\n    Skibidi.CreateSection(skTabSettings, { Title = \"Palette de couleurs\", Open = true })\n\n    Skibidi.CreateLabel(skTabSettings, {\n        Text  = \"Change la couleur d'accent de l'UI.\",\n        Color = C.Silver3,\n    })\n\n    -- Un bouton par couleur\n    for name, color in pairs(ThemeColors) do\n        Skibidi.CreateButton(skTabSettings, {\n            Text  = \"🎨  \" .. name,\n            Icon  = \"palette\",\n            Color = C.Void3,\n            TextColor = color,\n            OnClick = function()\n                setAccent(name)\n            end,\n        })\n    end\n\n    Skibidi.CreateSection(skTabSettings, { Title = \"Info\", Open = true })\n\n    Skibidi.CreateParagraph(skTabSettings, {\n        Title   = \"Server Finder\",\n        Icon    = \"info\",\n        Content = \"Liste les serveurs du jeu actuel.\\nClique sur Rejoindre pour t'y connecter.\\nServeur aléatoire = serveur au hasard.\\nPalette = change la couleur d'accent.\",\n    })\n\n    return skPanel\nend\n\n-- =========================================================\n-- START\n-- =========================================================\ntask.wait(0.5)\ncreateGui()\n\nprint(\"🟢 Server Finder — Skibidi UI edition loaded\")",
+      "description": "",
+      "version": "v1.0",
+      "requireKey": true,
+      "createdAt": 1790069729975,
+      "views": 0
+    }
+  },
+  "keys": {
+    "7BE11D2A430892A819E35D5F8609DD69": {
+      "key": "7BE11D2A430892A819E35D5F8609DD69",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "",
+      "createdAt": 1790069388588,
+      "durationHours": 24,
+      "activatedAt": 1790070117012,
+      "expiresAt": 1790156517012,
+      "usedBy": "99A52C9C-A8FE-4902-BA72-4C6453C6D78A",
+      "uses": 1,
+      "banned": false
+    },
+    "227A2DB8D1A3E803BFDCCD1CB1E9AE47": {
+      "key": "227A2DB8D1A3E803BFDCCD1CB1E9AE47",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "",
+      "createdAt": 1790069392864,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "33FE1DA69BBE4754EF644BABA98481E3": {
+      "key": "33FE1DA69BBE4754EF644BABA98481E3",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069857098,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "AC11BAAFFA95C798A104A430FB678E4D": {
+      "key": "AC11BAAFFA95C798A104A430FB678E4D",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069861384,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "8F5C45C97C56ADB52A3FA8A4DFBAA4D9": {
+      "key": "8F5C45C97C56ADB52A3FA8A4DFBAA4D9",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069862017,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "71544092EE27339A4A0663F1F34091D6": {
+      "key": "71544092EE27339A4A0663F1F34091D6",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069862533,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "1FE277D763E8E6A7F3455EE2900B480D": {
+      "key": "1FE277D763E8E6A7F3455EE2900B480D",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069863203,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "FAECBEFF13BF4ACCAAD5384D9635B0D7": {
+      "key": "FAECBEFF13BF4ACCAAD5384D9635B0D7",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069863399,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "231F8245559D7D68F3EFD2F5C09A23D7": {
+      "key": "231F8245559D7D68F3EFD2F5C09A23D7",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069863832,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "F5EC2DC74B764F113331013028C37C4A": {
+      "key": "F5EC2DC74B764F113331013028C37C4A",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069863887,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "A22D8C19A01F5B5E940ED3986C338DED": {
+      "key": "A22D8C19A01F5B5E940ED3986C338DED",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069863919,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "7BD8D5CBA4376BC8B51A463261D7832E": {
+      "key": "7BD8D5CBA4376BC8B51A463261D7832E",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069863954,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "2504546DFF2DB77360947A625C55EFC1": {
+      "key": "2504546DFF2DB77360947A625C55EFC1",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069863983,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "60857F73019CEA440C9E3FAA28034E58": {
+      "key": "60857F73019CEA440C9E3FAA28034E58",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069864014,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "611D819A078D72DBC9A5A9A1ABE3AB02": {
+      "key": "611D819A078D72DBC9A5A9A1ABE3AB02",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069864052,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "4C8CDFE1F4BAF10218F0A167F236B6C2": {
+      "key": "4C8CDFE1F4BAF10218F0A167F236B6C2",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069864083,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "595DFC34EAF4C6C4A37A0242631358DE": {
+      "key": "595DFC34EAF4C6C4A37A0242631358DE",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069864133,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "C65FADA1510D1078E2248AFCA220F1E4": {
+      "key": "C65FADA1510D1078E2248AFCA220F1E4",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069864177,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "321AA7FD36A7764830839C658901E847": {
+      "key": "321AA7FD36A7764830839C658901E847",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069864198,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "67031E2F69308D5CBFBA624A8944A122": {
+      "key": "67031E2F69308D5CBFBA624A8944A122",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069864235,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "2C4CB4F278FD2A423EB7F92D7B04E0A4": {
+      "key": "2C4CB4F278FD2A423EB7F92D7B04E0A4",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069864279,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "007E2D09457460BD3F126CA9BE69A70D": {
+      "key": "007E2D09457460BD3F126CA9BE69A70D",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069864808,
+      "durationHours": 24,
+      "activatedAt": 1790069865352,
+      "expiresAt": 1790156265352,
+      "usedBy": "99A52C9C-A8FE-4902-BA72-4C6453C6D78A",
+      "uses": 1,
+      "banned": false
+    },
+    "8E0E8FB7D556612C73688A8590CC8631": {
+      "key": "8E0E8FB7D556612C73688A8590CC8631",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069866121,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "07EE887D5079B58D0C6ACFF2C283A9BA": {
+      "key": "07EE887D5079B58D0C6ACFF2C283A9BA",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069979882,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "6CD49EBED407244F6106E9ECA920A6E0": {
+      "key": "6CD49EBED407244F6106E9ECA920A6E0",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069990391,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "8822AD88C2F913E428D9A4D24124E61E": {
+      "key": "8822AD88C2F913E428D9A4D24124E61E",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069990900,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "6FDC5DBFD143597143BF1B663F30716F": {
+      "key": "6FDC5DBFD143597143BF1B663F30716F",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069991439,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "93B1EF70F25B1BA90250E418138C5FD8": {
+      "key": "93B1EF70F25B1BA90250E418138C5FD8",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069991897,
+      "durationHours": 24,
+      "activatedAt": null,
+      "expiresAt": null,
+      "usedBy": null,
+      "uses": 0,
+      "banned": false
+    },
+    "9CD8FE1194A0B2B50FEECFF122269532": {
+      "key": "9CD8FE1194A0B2B50FEECFF122269532",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790069992529,
+      "durationHours": 24,
+      "activatedAt": 1790070009813,
+      "expiresAt": 1790156409813,
+      "usedBy": "99A52C9C-A8FE-4902-BA72-4C6453C6D78A",
+      "uses": 1,
+      "banned": false
+    },
+    "B46ACED06879E927361F3FF820E33DCE": {
+      "key": "B46ACED06879E927361F3FF820E33DCE",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Auto-generated (loader)",
+      "createdAt": 1790070044189,
+      "durationHours": 24,
+      "activatedAt": 1790070045074,
+      "expiresAt": 1790156445074,
+      "usedBy": "99A52C9C-A8FE-4902-BA72-4C6453C6D78A",
+      "uses": 1,
+      "banned": false
+    },
+    "00F755A4C859E5B66F4EC8639564C2D5": {
+      "key": "00F755A4C859E5B66F4EC8639564C2D5",
+      "scriptId": "e797c2b6bdfbdc89",
+      "note": "Checkpoint-generated",
+      "createdAt": 1790070368931,
+      "durationHours": 24,
+      "activatedAt": 1790070377511,
+      "expiresAt": 1790156777511,
+      "usedBy": "99A52C9C-A8FE-4902-BA72-4C6453C6D78A",
+      "uses": 1,
+      "banned": false
+    }
+  },
+  "bans": {},
+  "checkpointSessions": {
+    "0556d0236e218fbea8f9f0cc80da6d9d": {
+      "id": "0556d0236e218fbea8f9f0cc80da6d9d",
+      "scriptId": "e797c2b6bdfbdc89",
+      "ads": [
+        {
+          "index": 0,
+          "url": "https://github.com/topics/roblox-script",
+          "completedAt": 1790070334194,
+          "startedAt": 1790070316892
+        },
+        {
+          "index": 1,
+          "url": "https://www.reddit.com/r/robloxexploiting/",
+          "completedAt": 1790070351666,
+          "startedAt": 1790070336067
+        },
+        {
+          "index": 2,
+          "url": "https://www.youtube.com/results?search_query=roblox+script+showcase",
+          "completedAt": 1790070367786,
+          "startedAt": 1790070352742
+        }
+      ],
+      "createdAt": 1790070309777,
+      "expiresAt": 1790071209777,
+      "completed": true,
+      "generatedKey": "00F755A4C859E5B66F4EC8639564C2D5",
+      "hwid": null
+    }
+  }
+}

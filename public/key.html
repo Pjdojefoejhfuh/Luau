@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NovaAuth — Your Key</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,sans-serif;background:#000;color:#fff;min-height:100vh;
+display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow-x:hidden}
+#snowCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.bg-aura{position:fixed;top:-50%;left:-50%;width:200%;height:200%;z-index:0;
+background:radial-gradient(circle at 20% 20%,rgba(255,255,255,0.08) 0%,transparent 40%),
+radial-gradient(circle at 80% 60%,rgba(255,255,255,0.06) 0%,transparent 45%);
+animation:auraMove 20s ease-in-out infinite alternate}
+@keyframes auraMove{0%{transform:translate(0,0)}100%{transform:translate(2%,-3%)}}
+.card{position:relative;z-index:10;background:rgba(20,20,20,0.7);border:1px solid rgba(255,255,255,0.12);
+border-radius:20px;padding:50px 40px;max-width:520px;width:100%;text-align:center;backdrop-filter:blur(20px);
+box-shadow:0 30px 80px rgba(0,0,0,0.6);animation:cardIn 0.6s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes cardIn{from{opacity:0;transform:translateY(30px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+h1{font-size:28px;margin-bottom:8px;background:linear-gradient(90deg,#fff,#888);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:#666;font-size:14px;margin-bottom:35px}
+.key-box{background:rgba(0,0,0,0.5);border:2px solid rgba(60,220,120,0.4);border-radius:14px;
+padding:25px;margin-bottom:20px;position:relative;overflow:hidden}
+.key-box::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+background:linear-gradient(90deg,transparent,rgba(60,220,120,0.15),transparent);
+animation:shimmer 3s infinite}
+@keyframes shimmer{0%{left:-100%}100%{left:100%}}
+.key-code{font-family:'Consolas',monospace;font-size:15px;color:#4ade80;letter-spacing:2px;
+word-break:break-all;line-height:1.5;position:relative;z-index:2}
+.info{padding:15px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:20px;
+border:1px solid rgba(255,255,255,0.08);font-size:13px;color:#888}
+.info strong{color:#fff;display:block;margin-bottom:5px;font-size:14px}
+.btn{padding:14px 30px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;
+transition:all 0.25s;width:100%;margin-bottom:10px}
+.btn-copy{background:#4ade80;color:#000}
+.btn-copy:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(74,222,128,0.4)}
+.btn-ghost{background:rgba(255,255,255,0.05);color:#ccc;border:1px solid rgba(255,255,255,0.1)}
+.btn-ghost:hover{background:rgba(255,255,255,0.1);color:#fff}
+.status{padding:12px;border-radius:10px;font-size:13px;font-weight:600;margin-top:15px}
+.status.ok{background:rgba(60,220,120,0.15);color:#4ade80;border:1px solid rgba(60,220,120,0.3)}
+.status.warn{background:rgba(255,180,0,0.15);color:#ffb400;border:1px solid rgba(255,180,0,0.3)}
+.status.err{background:rgba(255,60,60,0.15);color:#ff6b6b;border:1px solid rgba(255,60,60,0.3)}
+</style>
+</head>
+<body>
+<canvas id="snowCanvas"></canvas>
+<div class="bg-aura"></div>
+
+<div class="card">
+  <h1 id="title">🔑 Your Key</h1>
+  <div class="sub" id="subtitle">Keep this safe. It activates on first use.</div>
+
+  <div class="key-box">
+    <div class="key-code" id="keyCode">LOADING...</div>
+  </div>
+
+  <div class="info">
+    <strong>📜 Script</strong>
+    <span id="scriptName">—</span>
+  </div>
+
+  <div class="info">
+    <strong>⏱️ Duration</strong>
+    <span id="duration">—</span>
+  </div>
+
+  <div class="info" id="statusInfo" style="display:none">
+    <strong>📊 Status</strong>
+    <span id="statusText">—</span>
+  </div>
+
+  <button class="btn btn-copy" onclick="copyKey()" id="copyBtn">📋 Copy Key</button>
+  <button class="btn btn-ghost" onclick="location.reload()">↻ Refresh</button>
+
+  <div class="status ok" id="copyStatus" style="display:none">✓ Key copied to clipboard!</div>
+</div>
+
+<script>
+/* SNOW */
+const canvas=document.getElementById('snowCanvas');const ctx=canvas.getContext('2d');let flakes=[];
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+resize();window.addEventListener('resize',resize);
+for(let i=0;i<80;i++)flakes.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,
+r:Math.random()*2+0.5,vy:Math.random()*0.8+0.3,vx:Math.random()*0.4-0.2,o:Math.random()*0.6+0.2,
+white:Math.random()>0.3});
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);
+for(const f of flakes){ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+ctx.fillStyle=f.white?`rgba(255,255,255,${f.o})`:`rgba(60,60,60,${f.o})`;ctx.fill();
+f.y+=f.vy;f.x+=f.vx;if(f.y>canvas.height){f.y=-10;f.x=Math.random()*canvas.width}
+if(f.x>canvas.width)f.x=0;if(f.x<0)f.x=canvas.width}requestAnimationFrame(draw)}
+draw();
+
+const KEY_ID=location.pathname.split('/').pop();
+let currentKey='';
+
+async function load(){
+  const r=await fetch('/api/key/'+KEY_ID);
+  if(!r.ok){document.getElementById('keyCode').textContent='INVALID KEY';
+    document.getElementById('title').textContent='❌ Error';return}
+  const d=await r.json();
+  currentKey=d.key;
+  document.getElementById('keyCode').textContent=d.key;
+  document.getElementById('scriptName').textContent=d.scriptName;
+  document.getElementById('duration').textContent=d.durationHours+' hours';
+  if(d.banned){
+    document.getElementById('title').textContent='⛔ Banned';
+    document.getElementById('subtitle').textContent='This key has been banned.';
+    document.getElementById('copyBtn').disabled=true;
+    document.getElementById('copyBtn').style.opacity='0.4';
+  } else if(d.expiresAt){
+    const now=Date.now();
+    if(d.expiresAt<now){
+      document.getElementById('statusInfo').style.display='block';
+      document.getElementById('statusText').textContent='⏱️ Expired on '+new Date(d.expiresAt).toLocaleString();
+      document.getElementById('title').textContent='⏱️ Expired';
+    } else {
+      const left=Math.floor((d.expiresAt-now)/3600000);
+      document.getElementById('statusInfo').style.display='block';
+      document.getElementById('statusText').textContent=`✓ Active — ${left} hours remaining`;
+    }
+  }
+}
+
+function copyKey(){
+  navigator.clipboard.writeText(currentKey).then(()=>{
+    document.getElementById('copyStatus').style.display='block';
+    document.getElementById('copyBtn').textContent='✓ Copied!';
+    setTimeout(()=>{
+      document.getElementById('copyStatus').style.display='none';
+      document.getElementById('copyBtn').textContent='📋 Copy Key';
+    },2000);
+  });
+}
+
+load();
+</script>
+</body>
+</html>

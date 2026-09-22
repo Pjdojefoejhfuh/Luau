@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaAuth — Premium Key System</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow-x:hidden;scroll-behavior:smooth}
+body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:#000;color:#fff;min-height:100vh;position:relative}
+
+#snowCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.bg-aura{position:fixed;top:-50%;left:-50%;width:200%;height:200%;z-index:0;
+background:radial-gradient(circle at 20% 20%,rgba(255,255,255,0.08) 0%,transparent 40%),
+radial-gradient(circle at 80% 60%,rgba(255,255,255,0.06) 0%,transparent 45%),
+radial-gradient(circle at 50% 90%,rgba(120,120,120,0.05) 0%,transparent 50%);
+animation:auraMove 20s ease-in-out infinite alternate;pointer-events:none}
+@keyframes auraMove{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-3%,2%) scale(1.05)}100%{transform:translate(2%,-3%) scale(1.02)}}
+.drip{position:fixed;top:0;width:2px;height:100vh;
+background:linear-gradient(180deg,rgba(255,255,255,0.5) 0%,rgba(255,255,255,0) 100%);
+z-index:1;pointer-events:none;animation:dripFall 4s ease-in infinite}
+@keyframes dripFall{0%{transform:translateY(-100%);opacity:0}10%{opacity:1}100%{transform:translateY(100vh);opacity:0}}
+
+.wrap{position:relative;z-index:10;max-width:1400px;margin:0 auto;padding:20px 30px}
+
+header{display:flex;justify-content:space-between;align-items:center;padding:15px 0;margin-bottom:25px;
+border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;background:rgba(0,0,0,0.7);
+backdrop-filter:blur(20px);z-index:100}
+.logo{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:800;letter-spacing:-0.5px;cursor:pointer}
+.logo-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#fff 0%,#888 100%);
+display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;font-size:20px;
+box-shadow:0 0 20px rgba(255,255,255,0.3);animation:logoPulse 3s ease-in-out infinite}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 20px rgba(255,255,255,0.3)}50%{box-shadow:0 0 35px rgba(255,255,255,0.6)}}
+.logo-text{background:linear-gradient(90deg,#fff,#aaa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+nav.tabs{display:flex;gap:4px;background:rgba(255,255,255,0.03);padding:5px;border-radius:12px;
+border:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(10px)}
+nav.tabs button{background:transparent;color:#888;border:none;padding:10px 20px;border-radius:8px;
+cursor:pointer;font-size:14px;font-weight:500;transition:all 0.25s;font-family:inherit}
+nav.tabs button:hover{color:#fff;background:rgba(255,255,255,0.05)}
+nav.tabs button.active{background:#fff;color:#000;box-shadow:0 0 20px rgba(255,255,255,0.4);font-weight:600}
+
+.btn-logout{background:transparent;border:1px solid rgba(255,255,255,0.15);color:#ccc;padding:10px 20px;
+border-radius:8px;cursor:pointer;font-size:13px;transition:all 0.2s}
+.btn-logout:hover{background:#fff;color:#000;border-color:#fff}
+
+/* HERO */
+.hero{text-align:center;padding:70px 20px 40px;position:relative}
+.hero .badge-top{display:inline-block;padding:6px 16px;background:rgba(255,255,255,0.05);
+border:1px solid rgba(255,255,255,0.1);border-radius:100px;font-size:12px;color:#aaa;margin-bottom:25px;
+letter-spacing:1px;text-transform:uppercase}
+.hero h1{font-size:68px;font-weight:900;line-height:1.05;letter-spacing:-3px;margin-bottom:25px}
+.hero h1 .grad1{background:linear-gradient(90deg,#fff,#888);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero h1 .grad2{background:linear-gradient(90deg,#aaa,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:#888;font-size:17px;max-width:600px;margin:0 auto 40px;line-height:1.7}
+.hero-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hero-buttons .btn{padding:15px 30px;font-size:15px}
+
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin:60px 0}
+.feature{padding:30px;border-radius:16px;background:rgba(255,255,255,0.025);
+border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(10px);transition:all 0.3s}
+.feature:hover{border-color:rgba(255,255,255,0.2);transform:translateY(-5px);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+.feature-icon{width:50px;height:50px;border-radius:12px;background:rgba(255,255,255,0.05);
+border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;
+font-size:24px;margin-bottom:18px}
+.feature h3{font-size:17px;margin-bottom:10px;color:#fff}
+.feature p{color:#888;font-size:14px;line-height:1.6}
+
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:35px;
+border-radius:16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);
+margin:60px 0;backdrop-filter:blur(10px)}
+.stats-bar .item{text-align:center}
+.stats-bar .item .num{font-size:32px;font-weight:900;
+background:linear-gradient(90deg,#fff,#888);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+margin-bottom:6px;font-variant-numeric:tabular-nums}
+.stats-bar .item .lbl{font-size:12px;color:#666;text-transform:uppercase;letter-spacing:1.5px}
+
+.docs{padding:40px;border-radius:16px;background:rgba(255,255,255,0.025);
+border:1px solid rgba(255,255,255,0.08);margin-bottom:60px;backdrop-filter:blur(10px)}
+.docs h2{font-size:24px;margin-bottom:15px}
+.docs p{color:#888;line-height:1.7;margin-bottom:20px}
+.docs pre{background:rgba(0,0,0,0.5);padding:20px;border-radius:10px;
+border:1px solid rgba(255,255,255,0.08);overflow:auto;font-family:Consolas,monospace;
+font-size:13px;color:#ccc;line-height:1.6}
+
+.panel{padding:28px;border-radius:16px;background:rgba(255,255,255,0.025);
+border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(10px);margin-bottom:20px;
+animation:panelIn 0.5s ease-out}
+@keyframes panelIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+.panel h2{font-size:18px;margin-bottom:20px;color:#fff;display:flex;align-items:center;gap:10px}
+.panel h2::before{content:'';width:4px;height:18px;background:#fff;border-radius:2px}
+.panel-row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.panel-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px}
+
+input.field,textarea.field,select.field{width:100%;padding:13px 16px;background:rgba(255,255,255,0.03);
+border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:14px;
+font-family:'Consolas','Monaco',monospace;margin-bottom:12px;transition:all 0.2s}
+textarea.field{min-height:180px;resize:vertical}
+input.field:focus,textarea.field:focus,select.field:focus{outline:none;border-color:#fff;
+background:rgba(255,255,255,0.06);box-shadow:0 0 0 3px rgba(255,255,255,0.08)}
+select.field{cursor:pointer}
+select.field option{background:#111;color:#fff}
+
+.btn{padding:12px 24px;border-radius:10px;border:none;font-size:14px;font-weight:600;
+cursor:pointer;transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;font-family:inherit}
+.btn-primary{background:#fff;color:#000}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(255,255,255,0.25)}
+.btn-ghost{background:rgba(255,255,255,0.05);color:#ccc;border:1px solid rgba(255,255,255,0.1)}
+.btn-ghost:hover{background:rgba(255,255,255,0.1);color:#fff}
+.btn-danger{background:rgba(255,60,60,0.15);color:#ff6b6b;border:1px solid rgba(255,60,60,0.3)}
+.btn-danger:hover{background:rgba(255,60,60,0.25)}
+.btn-success{background:rgba(60,220,120,0.15);color:#4ade80;border:1px solid rgba(60,220,120,0.3)}
+.btn-success:hover{background:rgba(60,220,120,0.25)}
+.btn-small{padding:7px 14px;font-size:12px}
+
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:12px 10px;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;
+color:#666;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:600}
+td{padding:14px 10px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;color:#ccc}
+tr:hover td{background:rgba(255,255,255,0.02)}
+code{background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:5px;
+font-family:'Consolas',monospace;font-size:12px;color:#fff;word-break:break-all}
+
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;
+font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.badge-active{background:rgba(60,220,120,0.12);color:#4ade80;border:1px solid rgba(60,220,120,0.3)}
+.badge-active::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ade80;
+animation:dotPulse 1.5s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.badge-expired{background:rgba(255,60,60,0.12);color:#ff6b6b;border:1px solid rgba(255,60,60,0.3)}
+.badge-unused{background:rgba(255,255,255,0.06);color:#888;border:1px solid rgba(255,255,255,0.1)}
+.badge-banned{background:rgba(255,0,0,0.2);color:#ff0000;border:1px solid rgba(255,0,0,0.4)}
+.badge-on{background:rgba(60,220,120,0.12);color:#4ade80;border:1px solid rgba(60,220,120,0.3)}
+.badge-off{background:rgba(255,255,255,0.05);color:#666;border:1px solid rgba(255,255,255,0.1)}
+
+#toast{position:fixed;bottom:30px;right:30px;padding:16px 24px;background:rgba(255,255,255,0.95);
+color:#000;border-radius:12px;font-weight:600;font-size:14px;opacity:0;transform:translateY(20px);
+transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;z-index:1000;
+box-shadow:0 15px 40px rgba(0,0,0,0.6)}
+#toast.show{opacity:1;transform:translateY(0)}
+
+.modal-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);
+backdrop-filter:blur(10px);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:rgba(20,20,20,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:20px;
+padding:35px;width:420px;max-width:90%;animation:cardIn 0.5s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes cardIn{from{opacity:0;transform:translateY(30px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal h2{font-size:22px;margin-bottom:8px;background:linear-gradient(90deg,#fff,#999);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.modal .sub{color:#666;font-size:13px;margin-bottom:25px}
+.modal input{width:100%;padding:14px 16px;background:rgba(255,255,255,0.04);
+border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:14px;
+margin-bottom:12px;transition:all 0.2s;font-family:inherit}
+.modal input:focus{outline:none;border-color:#fff;background:rgba(255,255,255,0.08);
+box-shadow:0 0 0 3px rgba(255,255,255,0.1)}
+.modal button{width:100%;padding:14px;background:#fff;color:#000;border:none;border-radius:10px;
+font-size:15px;font-weight:700;cursor:pointer;margin-top:5px;transition:all 0.25s;font-family:inherit}
+.modal button:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,255,255,0.3)}
+.modal .err{color:#ff6b6b;font-size:13px;text-align:center;margin-top:10px;min-height:18px}
+
+.hidden{display:none !important}
+.tab-content{animation:tabIn 0.35s ease-out}
+@keyframes tabIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:25px}
+.stat-card{padding:22px;border-radius:14px;background:rgba(255,255,255,0.03);
+border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(10px);transition:all 0.3s;
+position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+background:linear-gradient(90deg,transparent,rgba(255,255,255,0.05),transparent);transition:left 0.6s}
+.stat-card:hover::before{left:100%}
+.stat-card:hover{border-color:rgba(255,255,255,0.2);transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,0.4)}
+.stat-label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+.stat-value{font-size:28px;font-weight:800;background:linear-gradient(90deg,#fff,#aaa);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-variant-numeric:tabular-nums}
+
+.toggle{position:relative;display:inline-block;width:44px;height:24px;cursor:pointer}
+.toggle input{display:none}
+.toggle .slider{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.1);
+border-radius:24px;transition:.3s;border:1px solid rgba(255,255,255,0.15)}
+.toggle .slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:2px;
+background:#888;border-radius:50%;transition:.3s}
+.toggle input:checked + .slider{background:rgba(60,220,120,0.3);border-color:rgba(60,220,120,0.5)}
+.toggle input:checked + .slider:before{transform:translateX(20px);background:#4ade80}
+
+@media (max-width:900px){
+  .features{grid-template-columns:1fr}
+  .stats-grid,.stats-bar{grid-template-columns:1fr 1fr}
+  nav.tabs{display:none}
+  .hero h1{font-size:38px}
+  .panel-row,.panel-row-3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-aura"></div>
+<canvas id="snowCanvas"></canvas>
+
+<!-- ============ LANDING PAGE ============ -->
+<div id="landingView">
+  <div class="wrap">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">N</div>
+        <span class="logo-text">NovaAuth</span>
+      </div>
+      <nav class="tabs">
+        <button class="active" onclick="gotoSection('features', this)">Features</button>
+        <button onclick="gotoSection('stats', this)">Stats</button>
+        <button onclick="gotoSection('docs', this)">Docs</button>
+      </nav>
+      <button class="btn-logout" onclick="scrollToDocs()">Read Docs →</button>
+    </header>
+
+    <section class="hero">
+      <div class="badge-top">◆ PREMIUM KEY SYSTEM</div>
+      <h1>
+        <span class="grad1">The key system</span><br>
+        <span class="grad2">that fits you</span>
+      </h1>
+      <p>Keys locked to one device, verified server-side. Built for Lua, JavaScript, Python and C#. Protect your work with the most advanced authentication layer.</p>
+      <div class="hero-buttons">
+        <button class="btn btn-primary" onclick="scrollToDocs()">Read the docs →</button>
+        <button class="btn btn-ghost" onclick="gotoSection('features', document.querySelector('nav.tabs button'))">Explore features</button>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="feature">
+        <div class="feature-icon">🔐</div>
+        <h3>Server-Side Validation</h3>
+        <p>Every key is validated against our server. No client-side bypass possible.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🖥️</div>
+        <h3>HWID Locked</h3>
+        <p>Each key locks to the first device it's used on. Share it, lose it.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⏱️</div>
+        <h3>Time-Based Access</h3>
+        <p>Activation timer starts on first use. Set durations from hours to years.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🛡️</div>
+        <h3>Ban System</h3>
+        <p>Ban keys or entire HWIDs instantly. Complete control over who accesses.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📦</div>
+        <h3>Multiple Scripts</h3>
+        <p>Host unlimited scripts. Each one gets its own keys and stats.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <h3>Instant Delivery</h3>
+        <p>Blazing fast CDN-ready responses. Optimized for Roblox HttpGet.</p>
+      </div>
+    </section>
+
+    <section class="stats-bar" id="stats">
+      <div class="item"><div class="num" id="pubScripts">—</div><div class="lbl">Scripts Hosted</div></div>
+      <div class="item"><div class="num" id="pubKeys">—</div><div class="lbl">Keys Generated</div></div>
+      <div class="item"><div class="num" id="pubActive">—</div><div class="lbl">Active Keys</div></div>
+      <div class="item"><div class="num" id="pubViews">—</div><div class="lbl">Script Loads</div></div>
+    </section>
+
+    <section class="docs" id="docs">
+      <h2>📖 Quick Start Guide</h2>
+      <p>Integrate NovaAuth in 3 steps. Works with any Lua executor that supports HTTP requests.</p>
+      <pre>-- 1. Get your key from the key page
+-- 2. Use the NovaAuth loader for your script
+local BASE_URL = "http://localhost:3000"
+local SCRIPT_ID = "your_script_id_here"
+
+-- 3. Load the loader for that specific script
+loadstring(game:HttpGet(BASE_URL .. "/loader/" .. SCRIPT_ID))()
+
+-- The loader handles:
+--   • Key validation
+--   • HWID locking
+--   • Script delivery
+--   • Expiration check</pre>
+    </section>
+
+    <footer style="text-align:center;padding:40px 0;color:#444;font-size:12px;border-top:1px solid rgba(255,255,255,0.05)">
+      © 2025 NovaAuth · Premium Key System
+    </footer>
+  </div>
+</div>
+
+<!-- ============ ADMIN DASHBOARD ============ -->
+<div id="dashView" class="hidden">
+  <div class="wrap">
+    <header>
+      <div class="logo" onclick="logout()">
+        <div class="logo-icon">N</div>
+        <span class="logo-text">NovaAuth Admin</span>
+      </div>
+      <nav class="tabs">
+        <button data-tab="overview" class="active" onclick="switchTab('overview', this)">Overview</button>
+        <button data-tab="scripts" onclick="switchTab('scripts', this)">Scripts</button>
+        <button data-tab="keys" onclick="switchTab('keys', this)">Keys</button>
+        <button data-tab="bans" onclick="switchTab('bans', this)">Bans</button>
+        <button data-tab="docs" onclick="switchTab('docs', this)">Docs</button>
+      </nav>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </header>
+
+    <div id="tab-overview" class="tab-content">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">📜 Scripts</div><div class="stat-value" id="statScripts">0</div></div>
+        <div class="stat-card"><div class="stat-label">🔑 Active Keys</div><div class="stat-value" id="statKeys">0</div></div>
+        <div class="stat-card"><div class="stat-label">👁️ Total Loads</div><div class="stat-value" id="statViews">0</div></div>
+        <div class="stat-card"><div class="stat-label">⛔ Banned</div><div class="stat-value" id="statBans">0</div></div>
+      </div>
+      <div class="panel">
+        <h2>🚀 Quick Actions</h2>
+        <button class="btn btn-primary" onclick="switchTab('scripts', document.querySelector('[data-tab=scripts]'))">+ Create Script</button>
+        <button class="btn btn-ghost" onclick="switchTab('keys', document.querySelector('[data-tab=keys]'))" style="margin-left:8px">+ Generate Keys</button>
+      </div>
+    </div>
+
+    <div id="tab-scripts" class="tab-content hidden">
+      <div class="panel">
+        <h2>➕ New Script</h2>
+        <div class="panel-row">
+          <input id="sName" class="field" placeholder="Script name (e.g. AimBot Pro)">
+          <input id="sVersion" class="field" placeholder="Version (e.g. v1.0)" value="v1.0">
+        </div>
+        <input id="sDesc" class="field" placeholder="Short description (optional)">
+        <textarea id="sContent" class="field" placeholder="-- Paste your Luau code here"></textarea>
+        <label style="display:flex;align-items:center;gap:10px;margin-bottom:15px;cursor:pointer;color:#aaa;font-size:13px">
+          <span class="toggle">
+            <input type="checkbox" id="sRequireKey" checked>
+            <span class="slider"></span>
+          </span>
+          Require a valid key to load this script
+        </label>
+        <button class="btn btn-primary" onclick="createScript()">Create Script →</button>
+      </div>
+      <div class="panel">
+        <h2>📜 Your Scripts</h2>
+        <div id="scriptsList">Loading...</div>
+      </div>
+    </div>
+
+    <div id="tab-keys" class="tab-content hidden">
+      <div class="panel">
+        <h2>🔑 Generate Keys</h2>
+        <select id="keyScript" class="field"></select>
+        <div class="panel-row">
+          <input id="keyCount" class="field" type="number" value="1" min="1" max="200" placeholder="How many?">
+          <input id="keyHours" class="field" type="number" value="24" min="1" max="8760" placeholder="Duration (hours)">
+        </div>
+        <input id="keyNote" class="field" placeholder="Note (optional, e.g. buyer name)">
+        <button class="btn btn-primary" onclick="createKey()">Generate →</button>
+      </div>
+      <div class="panel">
+        <h2>🗝️ All Keys</h2>
+        <input id="keySearch" class="field" placeholder="🔍 Search keys..." oninput="loadKeys()">
+        <div id="keysList">Loading...</div>
+      </div>
+    </div>
+
+    <div id="tab-bans" class="tab-content hidden">
+      <div class="panel">
+        <h2>⛔ Ban HWID</h2>
+        <input id="banHwid" class="field" placeholder="HWID to ban">
+        <input id="banReason" class="field" placeholder="Reason (optional)">
+        <button class="btn btn-danger" onclick="createBan()">Ban HWID</button>
+      </div>
+      <div class="panel">
+        <h2>🚫 Banned HWIDs</h2>
+        <div id="bansList">Loading...</div>
+      </div>
+    </div>
+
+    <div id="tab-docs" class="tab-content hidden">
+      <div class="panel">
+        <h2>📖 Loader Integration</h2>
+        <p style="color:#888;line-height:1.7;margin-bottom:20px">
+          Each script has its own loader URL. Give your users the loader URL specific to the script they bought.
+        </p>
+        <pre style="background:rgba(0,0,0,0.5);padding:20px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);overflow:auto;font-family:Consolas,monospace;font-size:13px;color:#ccc">-- Give this to your users (in Roblox executor):
+loadstring(game:HttpGet("http://localhost:3000/loader/YOUR_SCRIPT_ID"))()
+
+-- The loader UI will:
+--   • Auto-detect if the script requires a key
+--   • If yes -> ask the user to get/paste a key
+--   • Validate server-side + HWID lock
+--   • Deliver the script if valid</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INSERT PASSWORD MODAL -->
+<div class="modal-bg" id="insertModal">
+  <div class="modal">
+    <h2>🔐 Admin Access</h2>
+    <div class="sub">Enter password to continue</div>
+    <input id="adminPass" type="password" placeholder="Password" autocomplete="current-password">
+    <button onclick="doLogin()">Unlock Dashboard →</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* SNOW */
+const canvas=document.getElementById('snowCanvas');
+const ctx=canvas.getContext('2d');
+let flakes=[];
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+resize();window.addEventListener('resize',resize);
+for(let i=0;i<120;i++)flakes.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,
+r:Math.random()*2+0.5,vy:Math.random()*0.8+0.3,vx:Math.random()*0.4-0.2,
+o:Math.random()*0.6+0.2,white:Math.random()>0.3});
+function drawSnow(){ctx.clearRect(0,0,canvas.width,canvas.height);
+for(const f of flakes){ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+ctx.fillStyle=f.white?`rgba(255,255,255,${f.o})`:`rgba(60,60,60,${f.o})`;ctx.fill();
+f.y+=f.vy;f.x+=f.vx;
+if(f.y>canvas.height){f.y=-10;f.x=Math.random()*canvas.width}
+if(f.x>canvas.width)f.x=0;if(f.x<0)f.x=canvas.width}
+requestAnimationFrame(drawSnow)}
+drawSnow();
+
+function spawnDrip(){const d=document.createElement('div');d.className='drip';
+d.style.left=Math.random()*100+'vw';d.style.animationDuration=(2.5+Math.random()*2)+'s';
+document.body.appendChild(d);setTimeout(()=>d.remove(),5000)}
+setInterval(spawnDrip,800);
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500)}
+
+/* NAV SECTION SCROLL */
+function gotoSection(id, btn){
+  document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'});
+  document.querySelectorAll('#landingView nav.tabs button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+function scrollToDocs(){gotoSection('docs', null)}
+
+/* VIEW SWITCH */
+function showLanding(){
+  document.getElementById('landingView').classList.remove('hidden');
+  document.getElementById('dashView').classList.add('hidden');
+  refreshPublicStats();
+}
+function showDash(){
+  document.getElementById('landingView').classList.add('hidden');
+  document.getElementById('dashView').classList.remove('hidden');
+  loadAll();
+}
+function openInsert(){
+  document.getElementById('insertModal').classList.add('show');
+  document.getElementById('loginErr').textContent='';
+  setTimeout(()=>document.getElementById('adminPass').focus(),100);
+}
+function closeInsert(){
+  document.getElementById('insertModal').classList.remove('show');
+  document.getElementById('adminPass').value='';
+  document.getElementById('loginErr').textContent='';
+}
+
+/* KEYBOARD "INSERT" TO OPEN ADMIN */
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Insert'){
+    e.preventDefault();
+    if(document.getElementById('dashView').classList.contains('hidden')){
+      openInsert();
+    }
+  }
+});
+
+/* LOGIN */
+async function doLogin(){
+  const password=document.getElementById('adminPass').value;
+  if(!password){document.getElementById('loginErr').textContent='Enter a password';return}
+  const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({password})});
+  if(r.ok){closeInsert();showDash()}
+  else document.getElementById('loginErr').textContent='❌ Wrong password';
+}
+async function logout(){await fetch('/api/logout',{method:'POST'});showLanding()}
+
+/* TABS */
+function switchTab(tab, btn){
+  document.querySelectorAll('#dashView nav.tabs button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else document.querySelector(`#dashView nav.tabs button[data-tab="${tab}"]`)?.classList.add('active');
+  document.querySelectorAll('#dashView .tab-content').forEach(t=>t.classList.add('hidden'));
+  document.getElementById('tab-'+tab).classList.remove('hidden');
+}
+
+/* API */
+async function api(url,opts={}){
+  const r=await fetch(url,{headers:{'Content-Type':'application/json'},...opts,
+    body:opts.body?JSON.stringify(opts.body):undefined});
+  if(r.status===401){logout();throw new Error('unauthorized')}
+  return r.json();
+}
+
+/* PUBLIC STATS */
+async function refreshPublicStats(){
+  try{
+    const r=await fetch('/api/public/stats');
+    const d=await r.json();
+    document.getElementById('pubScripts').textContent=d.scripts;
+    document.getElementById('pubKeys').textContent=d.keys;
+    document.getElementById('pubActive').textContent=d.activeKeys;
+    document.getElementById('pubViews').textContent=d.views;
+  }catch{}
+}
+
+/* SCRIPTS */
+async function createScript(){
+  const name=document.getElementById('sName').value.trim();
+  const content=document.getElementById('sContent').value;
+  const description=document.getElementById('sDesc').value.trim();
+  const version=document.getElementById('sVersion').value.trim()||'v1.0';
+  const requireKey=document.getElementById('sRequireKey').checked;
+  if(!name||!content)return toast('❌ Fill name and code');
+  const r=await api('/api/scripts',{method:'POST',body:{name,content,description,version,requireKey}});
+  toast('✅ Script created: '+r.id);
+  document.getElementById('sName').value='';
+  document.getElementById('sContent').value='';
+  document.getElementById('sDesc').value='';
+  loadAll();
+}
+
+async function loadScripts(){
+  const list=await api('/api/scripts');
+  const el=document.getElementById('scriptsList');
+  if(!list.length){el.innerHTML='<p style="color:#666">No scripts yet.</p>';
+    document.getElementById('statScripts').textContent='0';return}
+  el.innerHTML='<table><tr><th>Name</th><th>Version</th><th>Require Key</th><th>Keys</th><th>Loads</th><th>Loader URL</th><th>Actions</th></tr>'+
+    list.map(s=>`<tr>
+      <td><strong style="color:#fff">${escapeHtml(s.name)}</strong><br><small style="color:#666">${escapeHtml(s.description||'')}</small></td>
+      <td><code>${escapeHtml(s.version)}</code></td>
+      <td>
+        <label class="toggle">
+          <input type="checkbox" ${s.requireKey?'checked':''} onchange="toggleRequireKey('${s.id}')">
+          <span class="slider"></span>
+        </label>
+        <span class="badge ${s.requireKey?'badge-on':'badge-off'}" style="margin-left:8px">${s.requireKey?'ON':'OFF'}</span>
+      </td>
+      <td>${s.keyCount}</td>
+      <td>${s.views}</td>
+      <td><code>${s.loaderUrl}</code>
+        <button class="btn btn-ghost btn-small" style="margin-left:6px" onclick="copy('${s.loaderUrl}');toast('📋 Loader URL copied')">📋</button>
+      </td>
+      <td>
+        <button class="btn btn-ghost btn-small" onclick="showLoaderCode('${s.loaderUrl}')">📜 Get Loader</button>
+        <button class="btn btn-danger btn-small" onclick="delScript('${s.id}')">🗑️</button>
+      </td>
+    </tr>`).join('')+'</table>';
+  const sel=document.getElementById('keyScript');
+  sel.innerHTML=list.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+  document.getElementById('statScripts').textContent=list.length;
+}
+
+function showLoaderCode(loaderUrl){
+  const code = `loadstring(game:HttpGet("${loaderUrl}"))()`;
+  navigator.clipboard.writeText(code).catch(()=>{});
+  alert('Loadstring copied to clipboard:\n\n' + code);
+}
+
+async function toggleRequireKey(id){
+  await api('/api/scripts/'+id+'/toggle-key',{method:'POST'});
+  toast('🔀 Toggled key requirement');
+  loadScripts();
+}
+
+async function delScript(id){
+  if(!confirm('Delete this script and all its keys?'))return;
+  await api('/api/scripts/'+id,{method:'DELETE'});
+  toast('🗑️ Script deleted');loadAll();
+}
+
+/* KEYS */
+async function createKey(){
+  const scriptId=document.getElementById('keyScript').value;
+  const count=parseInt(document.getElementById('keyCount').value)||1;
+  const hours=parseInt(document.getElementById('keyHours').value)||24;
+  const note=document.getElementById('keyNote').value.trim();
+  if(!scriptId)return toast('❌ Create a script first');
+  const r=await api('/api/keys',{method:'POST',body:{scriptId,count,hours,note}});
+  toast(`🔑 ${r.count} key(s) generated`);
+  if(r.keys.length===1)navigator.clipboard.writeText(r.keys[0]).catch(()=>{});
+  loadAll();
+}
+
+async function loadKeys(){
+  const list=await api('/api/keys');
+  const search=(document.getElementById('keySearch').value||'').toUpperCase();
+  const filtered=search?list.filter(k=>k.key.includes(search)||k.scriptName.toUpperCase().includes(search)||(k.note||'').toUpperCase().includes(search)):list;
+  const el=document.getElementById('keysList');
+  const active=list.filter(k=>k.status==='active').length;
+  document.getElementById('statKeys').textContent=active;
+  const totalViews=list.reduce((s,k)=>s+k.uses,0);
+  document.getElementById('statViews').textContent=totalViews;
+  if(!filtered.length){el.innerHTML='<p style="color:#666">No keys found.</p>';return}
+  el.innerHTML='<table><tr><th>Key</th><th>Script</th><th>Note</th><th>Duration</th><th>Expires</th><th>Uses</th><th>Status</th><th>Actions</th></tr>'+
+    filtered.map(k=>{
+      let badge='<span class="badge badge-unused">Unused</span>';
+      if(k.status==='active')badge='<span class="badge badge-active">Active</span>';
+      else if(k.status==='expired')badge='<span class="badge badge-expired">Expired</span>';
+      else if(k.status==='banned')badge='<span class="badge badge-banned">Banned</span>';
+      const expires=k.expiresAt?new Date(k.expiresAt).toLocaleString():'—';
+      return `<tr>
+        <td><code>${k.key}</code></td>
+        <td>${escapeHtml(k.scriptName)}</td>
+        <td><small style="color:#888">${escapeHtml(k.note||'—')}</small></td>
+        <td>${k.durationHours}h</td>
+        <td><small>${expires}</small></td>
+        <td>${k.uses}</td>
+        <td>${badge}</td>
+        <td>
+          <button class="btn btn-ghost btn-small" onclick="copy('${k.key}');toast('📋 Key copied')">📋</button>
+          <button class="btn btn-ghost btn-small" onclick="copy('${k.url}');toast('📋 URL copied')">🔗</button>
+          <button class="btn ${k.banned?'btn-success':'btn-danger'} btn-small" onclick="toggleBan('${k.key}')">${k.banned?'✓':'⛔'}</button>
+          <button class="btn btn-ghost btn-small" onclick="resetKey('${k.key}')">↺</button>
+          <button class="btn btn-danger btn-small" onclick="delKey('${k.key}')">🗑️</button>
+        </td>
+      </tr>`;
+    }).join('')+'</table>';
+}
+async function toggleBan(key){await api('/api/keys/'+key+'/ban',{method:'POST'});toast('🔨 Toggled ban');loadKeys()}
+async function resetKey(key){
+  if(!confirm('Reset this key? (activates fresh timer)'))return;
+  await api('/api/keys/'+key+'/reset',{method:'POST'});toast('↺ Key reset');loadKeys();
+}
+async function delKey(key){
+  if(!confirm('Delete this key permanently?'))return;
+  await api('/api/keys/'+key,{method:'DELETE'});toast('🗑️ Key deleted');loadKeys();
+}
+
+/* BANS */
+async function createBan(){
+  const hwid=document.getElementById('banHwid').value.trim();
+  const reason=document.getElementById('banReason').value.trim();
+  if(!hwid)return toast('❌ Enter HWID');
+  await api('/api/bans',{method:'POST',body:{hwid,reason}});
+  toast('⛔ HWID banned');
+  document.getElementById('banHwid').value='';
+  document.getElementById('banReason').value='';
+  loadBans();
+}
+async function loadBans(){
+  const list=await api('/api/bans');
+  const el=document.getElementById('bansList');
+  document.getElementById('statBans').textContent=list.length;
+  if(!list.length){el.innerHTML='<p style="color:#666">No banned HWIDs.</p>';return}
+  el.innerHTML='<table><tr><th>HWID</th><th>Reason</th><th>Banned at</th><th></th></tr>'+
+    list.map(b=>`<tr>
+      <td><code>${b.hwid}</code></td>
+      <td>${escapeHtml(b.reason||'—')}</td>
+      <td>${new Date(b.bannedAt).toLocaleString()}</td>
+      <td><button class="btn btn-success btn-small" onclick="delBan('${b.hwid}')">Unban</button></td>
+    </tr>`).join('')+'</table>';
+}
+async function delBan(hwid){await api('/api/bans/'+hwid,{method:'DELETE'});toast('✓ Unbanned');loadBans()}
+
+/* UTILS */
+function copy(text){navigator.clipboard.writeText(text).catch(()=>{})}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+async function loadAll(){await loadScripts();await loadKeys();await loadBans()}
+
+/* INIT */
+(async()=>{
+  try{
+    const r=await fetch('/api/me');const d=await r.json();
+    if(d.logged)showDash();else showLanding();
+  }catch{showLanding()}
+})();
+
+/* Refresh public stats every 15s on landing */
+setInterval(()=>{
+  if(!document.getElementById('landingView').classList.contains('hidden')) refreshPublicStats();
+}, 15000);
+</script>
+</body>
+</html>
