@@ -79,6 +79,7 @@ let db = loadDB();
 const redisClient = new Redis({
   url: process.env.KV_REST_API_REDIS_URL,
   token: process.env.KV_REST_API_REDIS_TOKEN,
+  automaticDeserialization: false,
 });
 
 app.use(express.json({ limit: "5mb" }));
