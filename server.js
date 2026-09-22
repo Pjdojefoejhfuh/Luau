@@ -5,6 +5,8 @@ const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const { RedisStore } = require("connect-redis");
+const { Redis } = require("@upstash/redis");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,7 +21,7 @@ const DB_FILE = IS_VERCEL
   ? path.join(os.tmpdir(), "db.json")
   : path.join(__dirname, "data", "db.json");
 
-// Base par défaut (utilisée si aucun fichier dispo, ex: cold start Vercel)
+// Base par défaut
 const DEFAULT_DB = { scripts: {}, keys: {}, bans: {}, checkpointSessions: {} };
 
 function ensureDir(file) {
@@ -30,7 +32,6 @@ function ensureDir(file) {
 function loadDB() {
   try {
     if (!fs.existsSync(DB_FILE)) {
-      // Sur Vercel : tente de copier le db.json du repo vers /tmp (seed initial)
       const seed = path.join(__dirname, "data", "db.json");
       if (IS_VERCEL && fs.existsSync(seed)) {
         ensureDir(DB_FILE);
@@ -68,19 +69,30 @@ function saveDB(db) {
     ensureDir(DB_FILE);
     fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), { encoding: "utf8" });
   } catch (e) {
-    console.error("⚠️ saveDB échoué (Vercel = lecture seule sauf /tmp):", e.message);
+    console.error("⚠️ saveDB échoué:", e.message);
   }
 }
 
 let db = loadDB();
 
+/* ================= REDIS SESSION STORE ================= */
+const redisClient = new Redis({
+  url: process.env.KV_REST_API_REDIS_URL,
+  token: process.env.KV_REST_API_REDIS_TOKEN,
+});
+
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex"),
+  store: new RedisStore({ client: redisClient }),
+  secret: process.env.SESSION_SECRET || "change_me_secret_long_et_unique",
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 6, secure: IS_VERCEL, sameSite: "lax" }
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 6,
+    secure: IS_VERCEL,
+    sameSite: "lax"
+  }
 }));
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -115,10 +127,15 @@ app.post("/api/login", (req, res) => {
   const { password } = req.body;
   if (bcrypt.compareSync(password || "", ADMIN_PASS_HASH)) {
     req.session.logged = true;
-    return res.json({ ok: true });
+    req.session.save((err) => {
+      if (err) return res.status(500).json({ error: "session_save_failed" });
+      return res.json({ ok: true });
+    });
+    return;
   }
   res.status(401).json({ error: "bad_password" });
 });
+
 app.post("/api/logout", (req, res) => req.session.destroy(() => res.json({ ok: true })));
 app.get("/api/me", (req, res) => res.json({ logged: !!(req.session && req.session.logged) }));
 
