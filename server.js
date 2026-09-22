@@ -4,53 +4,83 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
-const ADMIN_PASSWORD = process.env.ADMIN_PASS || "Jaimelepain80@@@";
+const BASE_URL = process.env.BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${PORT}`);
+const ADMIN_PASSWORD = process.env.ADMIN_PASS || "CHANGE_ME_NOW";
 const ADMIN_PASS_HASH = bcrypt.hashSync(ADMIN_PASSWORD, 10);
 
-const DB_FILE = path.join(__dirname, "data", "db.json");
+// ⚠️ Sur Vercel, /tmp est le SEUL dossier inscriptible (éphémère).
+// En local, on garde ./data/db.json
+const IS_VERCEL = !!process.env.VERCEL;
+const DB_FILE = IS_VERCEL
+  ? path.join(os.tmpdir(), "db.json")
+  : path.join(__dirname, "data", "db.json");
+
+// Base par défaut (utilisée si aucun fichier dispo, ex: cold start Vercel)
+const DEFAULT_DB = { scripts: {}, keys: {}, bans: {}, checkpointSessions: {} };
+
+function ensureDir(file) {
+  const dir = path.dirname(file);
+  try { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); } catch (e) {}
+}
 
 function loadDB() {
-  if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify({ scripts: {}, keys: {}, bans: {} }, null, 2));
-  }
-  let raw = fs.readFileSync(DB_FILE, "utf8");
-  if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
-  raw = raw.trim();
-  if (!raw) return { scripts: {}, keys: {}, bans: {} };
   try {
+    if (!fs.existsSync(DB_FILE)) {
+      // Sur Vercel : tente de copier le db.json du repo vers /tmp (seed initial)
+      const seed = path.join(__dirname, "data", "db.json");
+      if (IS_VERCEL && fs.existsSync(seed)) {
+        ensureDir(DB_FILE);
+        fs.copyFileSync(seed, DB_FILE);
+      } else {
+        ensureDir(DB_FILE);
+        fs.writeFileSync(DB_FILE, JSON.stringify(DEFAULT_DB, null, 2));
+      }
+    }
+    let raw = fs.readFileSync(DB_FILE, "utf8");
+    if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
+    raw = raw.trim();
+    if (!raw) return { ...DEFAULT_DB };
     const d = JSON.parse(raw);
     if (!d.scripts) d.scripts = {};
     if (!d.keys) d.keys = {};
     if (!d.bans) d.bans = {};
     if (!d.checkpointSessions) d.checkpointSessions = {};
-    // Migration : ajoute requireKey si absent
     Object.values(d.scripts).forEach(s => {
       if (typeof s.requireKey !== "boolean") s.requireKey = true;
     });
     return d;
   } catch (e) {
-    console.error("⚠️ db.json corrompu, réinitialisation");
-    const fresh = { scripts: {}, keys: {}, bans: {} };
-    fs.writeFileSync(DB_FILE, JSON.stringify(fresh, null, 2));
-    return fresh;
+    console.error("⚠️ db.json corrompu, réinitialisation", e.message);
+    try {
+      ensureDir(DB_FILE);
+      fs.writeFileSync(DB_FILE, JSON.stringify(DEFAULT_DB, null, 2));
+    } catch (_) {}
+    return { ...DEFAULT_DB };
   }
 }
+
 function saveDB(db) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), { encoding: "utf8" });
+  try {
+    ensureDir(DB_FILE);
+    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), { encoding: "utf8" });
+  } catch (e) {
+    console.error("⚠️ saveDB échoué (Vercel = lecture seule sauf /tmp):", e.message);
+  }
 }
+
 let db = loadDB();
 
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-  secret: crypto.randomBytes(32).toString("hex"),
+  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex"),
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 6 }
+  cookie: { maxAge: 1000 * 60 * 60 * 6, secure: IS_VERCEL, sameSite: "lax" }
 }));
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -62,11 +92,9 @@ function requireAuth(req, res, next) {
 const LOADER_SECRET = process.env.LOADER_SECRET || "nova_auth_secret_2025_x7k9";
 
 function isRobloxClient(req) {
-  // 1. Header secret envoyé par le loader (le plus fiable)
   const secret = req.headers["x-nova-secret"];
   if (secret === LOADER_SECRET) return true;
 
-  // 2. Fallback User-Agent : Roblox natif ou executors connus
   const ua = (req.headers["user-agent"] || "").toLowerCase();
   const robloxUAs = [
     "roblox", "wininet", "synapse", "krnl", "script-ware", "sw-",
@@ -76,11 +104,9 @@ function isRobloxClient(req) {
   ];
   if (robloxUAs.some(p => ua.includes(p))) return true;
 
-  // 3. Refuse les navigateurs
   const browsers = ["mozilla", "chrome", "firefox", "safari", "edge", "opera"];
   if (browsers.some(p => ua.includes(p))) return false;
 
-  // 4. Refuse curl/postman par défaut (sauf si secret)
   return false;
 }
 
@@ -96,7 +122,7 @@ app.post("/api/login", (req, res) => {
 app.post("/api/logout", (req, res) => req.session.destroy(() => res.json({ ok: true })));
 app.get("/api/me", (req, res) => res.json({ logged: !!(req.session && req.session.logged) }));
 
-/* ================= PUBLIC STATS (vraies stats) ================= */
+/* ================= PUBLIC STATS ================= */
 app.get("/api/public/stats", (req, res) => {
   const now = Date.now();
   const scripts = Object.values(db.scripts);
@@ -256,7 +282,7 @@ app.delete("/api/bans/:hwid", requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
-/* ================= KEY PAGE (user) ================= */
+/* ================= KEY PAGE ================= */
 app.get("/key/:key", (req, res) => {
   const k = db.keys[req.params.key];
   if (!k) return res.status(404).send("<h1 style='color:#fff;background:#000;padding:50px;text-align:center'>Invalid key</h1>");
@@ -279,7 +305,7 @@ app.get("/api/key/:key", (req, res) => {
   });
 });
 
-/* ================= LOADER (dynamic per script) ================= */
+/* ================= LOADER ================= */
 app.get("/loader", (req, res) => {
   res.type("text/plain").sendFile(path.join(__dirname, "public", "loader.lua"));
 });
@@ -287,7 +313,6 @@ app.get("/loader", (req, res) => {
 app.get("/loader/:scriptId", (req, res) => {
   const s = db.scripts[req.params.scriptId];
   if (!s) return res.status(404).send("-- script not found");
-  // Sert le loader avec le scriptId injecté
   let lua = fs.readFileSync(path.join(__dirname, "public", "loader.lua"), "utf8");
   lua = lua.replace('local SCRIPT_ID = "REPLACE_ME"', `local SCRIPT_ID = "${s.id}"`);
   res.type("text/plain").send(lua);
@@ -308,7 +333,7 @@ app.get("/raw/:id", (req, res) => {
   res.type("text/plain").send(s.content);
 });
 
-/* ================= VALIDATE (loader -> server) ================= */
+/* ================= VALIDATE ================= */
 app.post("/api/validate", (req, res) => {
   if (!isRobloxClient(req)) {
     return res.status(403).json({
@@ -316,7 +341,6 @@ app.post("/api/validate", (req, res) => {
       message: "This endpoint is for the Roblox script client, not a browser."
     });
   }
-  // Log pour debug
   console.log(`[validate] UA="${req.headers["user-agent"]}" secret="${req.headers["x-nova-secret"] ? "YES" : "NO"}" body=`, req.body);
 
   const { key, scriptId, hwid } = req.body;
@@ -325,7 +349,6 @@ app.post("/api/validate", (req, res) => {
   const script = db.scripts[scriptId];
   if (!script) return res.json({ valid: false, reason: "script_gone" });
 
-  // Si le script ne requiert PAS de clé → on renvoie direct le script
   if (script.requireKey === false) {
     script.views = (script.views || 0) + 1;
     saveDB(db);
@@ -337,7 +360,6 @@ app.post("/api/validate", (req, res) => {
     });
   }
 
-  // Sinon : clé obligatoire
   if (!key) return res.json({ valid: false, reason: "no_key" });
   const k = db.keys[key.toUpperCase()];
   if (!k) return res.json({ valid: false, reason: "invalid" });
@@ -368,19 +390,14 @@ app.post("/api/validate", (req, res) => {
   });
 });
 
-/* ================= CHECK SCRIPT MODE ================= */
+/* ================= SCRIPT MODE ================= */
 app.get("/api/script-mode/:id", (req, res) => {
   const s = db.scripts[req.params.id];
   if (!s) return res.status(404).json({ error: "not_found" });
-  res.json({
-    id: s.id,
-    name: s.name,
-    requireKey: s.requireKey
-  });
+  res.json({ id: s.id, name: s.name, requireKey: s.requireKey });
 });
 
-/* ================= GET KEY (loader) ================= */
-/* ================= GET KEY (returns an EXISTING key, no creation) ================= */
+/* ================= GET KEY ================= */
 app.get("/api/getkey/:scriptId", (req, res) => {
   if (!isRobloxClient(req)) {
     return res.status(403).json({
@@ -393,16 +410,12 @@ app.get("/api/getkey/:scriptId", (req, res) => {
   if (!s) return res.status(404).json({ error: "script_not_found" });
 
   const now = Date.now();
-  const allKeys = Object.values(db.keys).filter(k =>
-    k.scriptId === s.id && !k.banned
-  );
+  const allKeys = Object.values(db.keys).filter(k => k.scriptId === s.id && !k.banned);
 
-  // Priorité 1 : clés jamais activées (les plus anciennes d'abord)
   const unused = allKeys
     .filter(k => !k.activatedAt)
     .sort((a, b) => a.createdAt - b.createdAt);
 
-  // Priorité 2 : clés actives (pas expirées), les plus récentes
   const active = allKeys
     .filter(k => k.activatedAt && k.expiresAt && k.expiresAt > now)
     .sort((a, b) => b.createdAt - a.createdAt);
@@ -432,13 +445,12 @@ app.get("/api/getkey/:scriptId", (req, res) => {
 
 app.get("/api/config", (req, res) => res.json({ baseUrl: BASE_URL }));
 
-
-/* ================= LOADER CONFIG (secret for validation) ================= */
+/* ================= LOADER CONFIG ================= */
 app.get("/api/loader-config", (req, res) => {
   res.json({ secret: LOADER_SECRET, baseUrl: BASE_URL });
 });
 
-/* ================= DEBUG (à retirer en prod) ================= */
+/* ================= DEBUG ================= */
 app.post("/api/debug/echo", (req, res) => {
   res.json({
     headers: req.headers,
@@ -447,8 +459,7 @@ app.post("/api/debug/echo", (req, res) => {
   });
 });
 
-/* ================= CHECKPOINT SESSION SYSTEM ================= */
-/* Create a short-lived session with 3 ads checkpoints */
+/* ================= CHECKPOINT SYSTEM ================= */
 app.get("/api/checkpoint/start/:scriptId", (req, res) => {
   if (!isRobloxClient(req)) {
     return res.status(403).json({
@@ -473,7 +484,7 @@ app.get("/api/checkpoint/start/:scriptId", (req, res) => {
       startedAt: null
     })),
     createdAt: now,
-    expiresAt: now + 15 * 60 * 1000, // 15 minutes
+    expiresAt: now + 15 * 60 * 1000,
     completed: false,
     generatedKey: null,
     hwid: null
@@ -488,7 +499,6 @@ app.get("/api/checkpoint/start/:scriptId", (req, res) => {
   });
 });
 
-/* Get session status (polled by the checkpoint page) */
 app.get("/api/checkpoint/status/:sessionId", (req, res) => {
   const sess = db.checkpointSessions[req.params.sessionId];
   if (!sess) return res.status(404).json({ error: "not_found" });
@@ -514,7 +524,6 @@ app.get("/api/checkpoint/status/:sessionId", (req, res) => {
   });
 });
 
-/* Called when the user opens the ad */
 app.post("/api/checkpoint/open/:sessionId/:index", (req, res) => {
   const sess = db.checkpointSessions[req.params.sessionId];
   if (!sess) return res.status(404).json({ error: "not_found" });
@@ -528,7 +537,6 @@ app.post("/api/checkpoint/open/:sessionId/:index", (req, res) => {
   res.json({ ok: true, url: ad.url });
 });
 
-/* Called after the user has stayed 15s on the ad and returns */
 app.post("/api/checkpoint/complete/:sessionId/:index", (req, res) => {
   const sess = db.checkpointSessions[req.params.sessionId];
   if (!sess) return res.status(404).json({ error: "not_found" });
@@ -538,18 +546,12 @@ app.post("/api/checkpoint/complete/:sessionId/:index", (req, res) => {
   if (!ad) return res.status(404).json({ error: "ad_not_found" });
   if (ad.completedAt) return res.json({ ok: true, alreadyDone: true });
 
-  // Vérifie que 15s min se sont écoulées depuis l'ouverture
   const elapsed = Date.now() - (ad.startedAt || 0);
   if (elapsed < 15000) {
-    return res.status(400).json({
-      error: "too_fast",
-      waitMore: 15000 - elapsed
-    });
+    return res.status(400).json({ error: "too_fast", waitMore: 15000 - elapsed });
   }
 
   ad.completedAt = Date.now();
-
-  // Si les 3 sont complétés -> marque la session complète
   const allDone = sess.ads.every(a => a.completedAt);
   if (allDone) sess.completed = true;
 
@@ -557,7 +559,6 @@ app.post("/api/checkpoint/complete/:sessionId/:index", (req, res) => {
   res.json({ ok: true, allDone });
 });
 
-/* Generate the final key (only if all 3 checkpoints done) */
 app.post("/api/checkpoint/generate/:sessionId", (req, res) => {
   const sess = db.checkpointSessions[req.params.sessionId];
   if (!sess) return res.status(404).json({ error: "not_found" });
@@ -566,7 +567,6 @@ app.post("/api/checkpoint/generate/:sessionId", (req, res) => {
   const allDone = sess.ads.every(a => a.completedAt);
   if (!allDone) return res.status(400).json({ error: "not_all_completed" });
 
-  // Réutilise la clé déjà générée pour cette session
   if (sess.generatedKey) {
     const existing = db.keys[sess.generatedKey];
     if (existing) {
@@ -607,7 +607,7 @@ app.post("/api/checkpoint/generate/:sessionId", (req, res) => {
   });
 });
 
-/* ================= ADS ROTATION ================= */
+/* ================= ADS ================= */
 const AD_POOL = [
   "https://www.google.com/search?q=roblox+script+hub",
   "https://www.youtube.com/results?search_query=roblox+script+showcase",
@@ -627,8 +627,15 @@ function pickAds(n) {
 app.get("/checkpoint/:sessionId", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "checkpoint.html"));
 });
-app.listen(PORT, () => {
-  console.log(`\n✅ NovaAuth running : http://localhost:${PORT}\n`);
-  console.log(`🔐 Admin password : ${ADMIN_PASSWORD}`);
-  console.log(`📁 Data file : ${DB_FILE}\n`);
-});
+
+/* ================= EXPORT (Vercel serverless) ================= */
+module.exports = app;
+
+// En local uniquement : démarre le serveur
+if (!IS_VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`\n✅ NovaAuth running : http://localhost:${PORT}\n`);
+    console.log(`🔐 Admin password : ${ADMIN_PASSWORD}`);
+    console.log(`📁 Data file : ${DB_FILE}\n`);
+  });
+}
